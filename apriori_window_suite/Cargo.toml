@@ -15,6 +15,10 @@ path = "src/main.rs"
 name = "st_pipeline"
 path = "src/bin/st_pipeline.rs"
 
+[[bin]]
+name = "md_pipeline"
+path = "src/bin/md_pipeline.rs"
+
 [dependencies]
 itertools = "0.14"
 rand = "0.8"

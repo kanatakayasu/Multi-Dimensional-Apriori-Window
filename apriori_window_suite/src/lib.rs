@@ -5,8 +5,10 @@
 
 pub mod apriori;
 pub mod basket;
+pub mod grid3d;
 pub mod interval;
 pub mod io;
+pub mod md_apriori;
 pub mod st_correlator;
 pub mod util;
 
