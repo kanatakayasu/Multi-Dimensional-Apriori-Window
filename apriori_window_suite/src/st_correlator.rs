@@ -237,7 +237,7 @@ pub fn detect_changepoints(
                 let direction = if is_up { Direction::Up } else { Direction::Down };
 
                 // Compute magnitude: mean of [t-h, t) vs [t, t+h)
-                let before_start = if t >= h { t - h } else { 0 };
+                let before_start = t.saturating_sub(h);
                 let after_end = if t + h <= t_len { t + h } else { t_len };
 
                 let before_sum: i64 = if t > before_start {
@@ -403,7 +403,7 @@ fn permutation_test(
     // Parallel permutation: each thread generates its own RNG from a deterministic seed
     let base_seed = config.seed.unwrap_or(42);
     let n_chunks = rayon::current_num_threads().max(1);
-    let perms_per_chunk = (n_perm + n_chunks - 1) / n_chunks;
+    let perms_per_chunk = n_perm.div_ceil(n_chunks);
 
     // Each chunk returns: HashMap<event_id, count_ge>
     let chunk_results: Vec<HashMap<String, usize>> = (0..n_chunks)

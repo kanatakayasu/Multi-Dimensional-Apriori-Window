@@ -174,24 +174,22 @@ fn generate_st_data(cfg: &SyntheticSTConfig, out_dir: &Path) {
 
         // Planted signals: boost items from vocabulary within event scope
         for sig in &cfg.signals {
-            if t >= sig.start && t <= sig.end && sig.spatial_scope.contains(&loc) {
-                if rng.gen::<f64>() < sig.boost_factor {
+            if t >= sig.start && t <= sig.end && sig.spatial_scope.contains(&loc)
+                && rng.gen::<f64>() < sig.boost_factor {
                     for &item in &sig.pattern {
                         items.insert(item);
                     }
                 }
-            }
         }
 
         // Unrelated dense patterns (no event association)
         for ur in &cfg.unrelated {
-            if t >= ur.start && t <= ur.end && ur.spatial_scope.contains(&loc) {
-                if rng.gen::<f64>() < ur.boost_factor {
+            if t >= ur.start && t <= ur.end && ur.spatial_scope.contains(&loc)
+                && rng.gen::<f64>() < ur.boost_factor {
                     for &item in &ur.pattern {
                         items.insert(item);
                     }
                 }
-            }
         }
 
         transactions.push(items);
@@ -576,7 +574,7 @@ fn cmd_run(args: &Args) {
     if let Some(out_path) = args.get("--out") {
         std::fs::write(out_path, serde_json::to_string_pretty(&output).unwrap())
             .expect("failed to write output");
-        eprintln!("Results written to {}", out_path);
+        eprintln!("Results written to {out_path}");
     } else {
         println!("{}", serde_json::to_string_pretty(&output).unwrap());
     }
@@ -665,7 +663,7 @@ fn run_experiment_scenario(
         "ex3" => run_ex3(&data_dir, out_dir, seed, n_perms),
         "ex4" => run_ex4(out_dir, seed, n_perms),
         _ => {
-            eprintln!("Unknown scenario: {}. Available: ex1, ex2, ex3, ex4", scenario);
+            eprintln!("Unknown scenario: {scenario}. Available: ex1, ex2, ex3, ex4");
             std::process::exit(1);
         }
     }
@@ -782,7 +780,7 @@ fn run_ex1(data_dir: &Path, out_dir: &Path, _seed: u64, n_perms: usize) -> serde
             .map(|r| r["baseline_1d"]["eval"]["f1"].as_f64().unwrap())
             .sum::<f64>() / seeds.len() as f64;
 
-        eprintln!("  β={:.1} avg: ST F1={:.3}, 1D F1={:.3}", beta, avg_st_f1, avg_bl_f1);
+        eprintln!("  β={beta:.1} avg: ST F1={avg_st_f1:.3}, 1D F1={avg_bl_f1:.3}");
 
         all_results.push(serde_json::json!({
             "beta": beta,
@@ -830,7 +828,7 @@ fn run_ex2(data_dir: &Path, out_dir: &Path, seed: u64, n_perms: usize) -> serde_
     let mut all_results = Vec::new();
 
     for scenario in &scenarios {
-        let run_dir = data_dir.join(format!("ex2_{}", scenario));
+        let run_dir = data_dir.join(format!("ex2_{scenario}"));
 
         let cfg = match *scenario {
             "A_prox" => SyntheticSTConfig {
@@ -1112,7 +1110,7 @@ fn run_ex4(out_dir: &Path, seed: u64, n_perms: usize) -> serde_json::Value {
 
     for &n in &sizes {
         for &n_ev in &n_events_list {
-            let run_dir = data_dir.join(format!("ex4_n{}_e{}", n, n_ev));
+            let run_dir = data_dir.join(format!("ex4_n{n}_e{n_ev}"));
 
             // Generate signals
             let mut signals = Vec::new();
@@ -1120,8 +1118,8 @@ fn run_ex4(out_dir: &Path, seed: u64, n_perms: usize) -> serde_json::Value {
             for i in 0..n_ev {
                 signals.push(PlantedSignal {
                     pattern: vec![10 + 2 * i as i64, 11 + 2 * i as i64],
-                    event_id: format!("E{}", i),
-                    event_name: format!("event_{}", i),
+                    event_id: format!("E{i}"),
+                    event_name: format!("event_{i}"),
                     start: (i + 1) * segment - segment / 2,
                     end: (i + 1) * segment + segment / 2,
                     spatial_scope: (0..n_locations / 2).collect(),

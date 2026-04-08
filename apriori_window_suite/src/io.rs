@@ -81,7 +81,7 @@ pub fn write_patterns_csv(
             continue;
         }
         let components_body = itemset.iter().map(|item| item.to_string()).join(", ");
-        let pattern_components = format!("\"[{{{}}}]\"", components_body);
+        let pattern_components = format!("\"[{{{components_body}}}]\"");
         let pattern_gaps = "\"[]\"";
         let intervals_count = intervals.len();
         let intervals_str = if intervals_count == 0 {
@@ -89,9 +89,9 @@ pub fn write_patterns_csv(
         } else {
             let joined = intervals
                 .iter()
-                .map(|(s, e)| format!("({},{})", s, e))
+                .map(|(s, e)| format!("({s},{e})"))
                 .join(";");
-            format!("\"{}\"", joined)
+            format!("\"{joined}\"")
         };
         writeln!(
             writer,

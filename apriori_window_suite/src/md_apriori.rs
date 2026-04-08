@@ -115,8 +115,8 @@ fn build_xy_t_events(
         }
         let xi = txn.xi;
         let yi = txn.yi;
-        let xs_lo = if xi + 1 >= wx { xi + 1 - wx } else { 0 };
-        let ys_lo = if yi + 1 >= wy { yi + 1 - wy } else { 0 };
+        let xs_lo = (xi + 1).saturating_sub(wx);
+        let ys_lo = (yi + 1).saturating_sub(wy);
         let xs_hi = xi.min(gx.saturating_sub(1));
         let ys_hi = yi.min(gy.saturating_sub(1));
 

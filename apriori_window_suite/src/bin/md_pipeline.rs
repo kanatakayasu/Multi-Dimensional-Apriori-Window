@@ -145,7 +145,7 @@ fn cmd_gen(args: &HashMap<String, String>) {
 // ---------------------------------------------------------------------------
 
 fn read_tsv(path: &str) -> Vec<(f64, f64, f64, Vec<i64>)> {
-    let f = fs::File::open(path).unwrap_or_else(|_| panic!("ファイルが見つかりません: {}", path));
+    let f = fs::File::open(path).unwrap_or_else(|_| panic!("ファイルが見つかりません: {path}"));
     let reader = BufReader::new(f);
     let mut records = Vec::new();
     for line in reader.lines() {
@@ -206,8 +206,8 @@ fn cmd_run(args: &HashMap<String, String>) {
             .unwrap_or(3),
     };
 
-    eprintln!("入力: {}", input);
-    eprintln!("パラメータ: {:?}", params);
+    eprintln!("入力: {input}");
+    eprintln!("パラメータ: {params:?}");
 
     let txns = read_tsv(input);
     eprintln!("トランザクション数: {}", txns.len());
