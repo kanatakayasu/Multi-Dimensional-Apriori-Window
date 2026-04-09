@@ -2,77 +2,76 @@
 \section{関連研究}\label{sec:related}
 % ==============================================================
 
-本研究は、頻出パターンのサポート変動を外部イベントに帰属させる問題を
-空間次元に拡張する。この問題は複数の研究領域にまたがるため、
-各領域の代表的手法とその限界を整理し、本研究の位置づけを明確にする。
+本研究は、時空間トランザクションデータから密集アイテムセット領域を発見する問題を扱う。
+この問題は複数の研究領域にまたがるため、
+各領域の代表的手法と本研究の相違点を整理する。
 
-\subsection{イベント帰属パイプライン}
+\subsection{頻出パターンマイニングとAprioriアルゴリズム}
 
-頻出パターンのサポート変動を外部イベントに帰属させるフレームワーク~\cite{dsaa2025}は、
-変化点検出・帰属スコアリング・置換検定・BH補正・重複排除の5ステップで構成される。
-このパイプラインは\textbf{1次元のサポート時系列}のみを扱うため、
-イベント効果が空間的に局在する場合に2つの限界がある：
-(1) 全空間のサポートを集約することでイベント効果が希釈され検出力が低下する、
-(2)「どの地域で効果があったか」という問いに答えられない。
-\textbf{本研究}はこの1次元パイプラインを多次元サポート曲面に拡張し、
-空間的近接度と空間構造を保存する置換検定を導入することで、
-これらの限界を克服する。
+Agrawal ら~\cite{agrawal1994apriori}のAprioriアルゴリズムは、
+アイテムセットの単調性（部分集合は常に親集合以上のサポートを持つ）を利用した
+枝刈りにより、候補数を大幅に削減する。
+Han ら~\cite{han2000mining}のFP-Growthは接頭辞木を用いてさらに高速化する。
+これらは静的なトランザクションデータベースを対象とし、
+時間的・空間的なパターン分布の変化は扱わない。
 
-\subsection{空間スキャン統計}
+本研究は Apriori の枝刈り原理を3次元密集セル集合に拡張し、
+候補セルの交差集合が空の場合に $I_P$ 構築を省略する（\S\ref{sec:alg_k2}）。
 
-Kulldorff~\cite{kulldorff1997spatial}の空間スキャン統計は、
-点過程データにおける空間クラスターを検出する代表的手法であり、
-時空間拡張~\cite{kulldorff2001prospective}は円筒形の走査窓を使用する。
-しかしこれらは\textbf{アイテムセットパターンを扱わず}、
-検出された密集が\emph{なぜ}生じたかというイベントへの帰属には答えない。
-本研究は、パターンのサポート\emph{変動}を検出するだけでなく、
-その変動を既知の外部イベントに統計的に帰属させる点で根本的に異なる。
+\subsection{Apriori-Window（直接の前身研究）}
+
+Apriori-Window~\cite{aprioriwindow}は、
+タイムスタンプ付きトランザクションデータに対して
+スライディングウィンドウサポートが閾値を超える密集区間を
+直接かつ厳密に発見するアルゴリズムである。
+$t$ 軸ストライドにより非密集区間を効率的にスキップし、
+Apriori 枝刈りにより $(k{-}1)$-部分集合に密集区間がないパターンを早期除去する。
+比較実験では LPFIM~\cite{han2000mining}、LPPM、Recur を大幅に上回る性能を示した。
+
+本研究はこの手法を1次元（時間軸のみ）から
+3次元（時間 $\times$ 空間 $x \times$ 空間 $y$）に拡張する。
+$W_x = W_y = 1$ とすると本研究の問題設定・アルゴリズムは
+Apriori-Window に帰着する（注意~\ref{rem:1d_reduction}、補題~\ref{lem:stride}）。
+
+\subsection{スライディングウィンドウパターンマイニング}
+
+スライディングウィンドウを用いて時間的に変化するパターンを追跡する研究として、
+Teng ら~\cite{dsaa2025}は変化点ベースのイベント帰属パイプラインを提案している。
+このパイプラインは1次元の時間軸のみを扱い、
+空間的に局在するパターン変動は検出できない。
+
+\subsection{時空間パターンマイニング}
+
+軌跡パターンマイニング~\cite{giannotti2007trajectory}は
+移動オブジェクトの軌跡から時空間パターンを発見する。
+空間コロケーションマイニング~\cite{shekhar2001colocation}は
+空間的に共起する特徴を発見する。
+これらは空間的分布を扱うが、
+スライディングウィンドウによるサポートの時空間集計や
+密集領域の連結成分抽出は対象としない。
 
 \subsection{密部分テンソルマイニング}
 
 DenseAlert~\cite{shin2017densealert}やM-Zoom~\cite{shin2018mzoom}は
-多次元テンソルにおける密ブロックをリアルタイムまたは事後的に検出する。
-これらは密度\emph{異常}の検出に優れるが、
-検出された密度変動と外部イベントの\textbf{統計的関連を検定する機能を持たない}。
-すなわち「密である」ことは分かるが「なぜ密になったか」は不明のままである。
-本研究は帰属スコアリングと置換検定を通じて、
-変動の因果的候補（イベント）との関連を統計的に評価する。
+多次元テンソルにおける密ブロックを検出する。
+これらはテンソル全体のランク分解に基づく異常検出が主目的であり、
+アイテムセットパターンのスライディングウィンドウサポートや
+6近傍連結成分としての密集領域抽出は扱わない。
 
-\subsection{時空間パターンマイニング}
+\subsection{空間スキャン統計}
 
-軌跡パターンマイニング~\cite{giannotti2007trajectory}や
-空間コロケーションパターン~\cite{shekhar2001colocation}は、
-空間的に共起するパターンの発見を対象とする。
-これらはパターンの空間的分布を扱うが、
-サポートの\textbf{時間的変動}やその原因帰属は対象としない。
-本研究は時間と空間の両方でサポート変動を追跡し、
-イベントとの帰属関係を検定する点で異なる。
-
-\subsection{計量経済学のイベント・スタディ法}
-
-MacKinlay~\cite{mackinlay1997event}のイベント・スタディ法は、
-企業イベント（合併・増配等）の株価への影響を統計的に評価する確立された手法である。
-しかし\textbf{単一のアウトカム変数}（異常収益率）を対象としており、
-数千のパターン時系列を同時に検定する本研究の設定とはスケールが異なる。
-また空間次元は考慮されない。
-
-\subsection{サロゲートデータと置換検定}
-
-Lancaster et al.~\cite{lancaster2018surrogate}は
-時系列データに対するサロゲートデータ生成法を体系的に整理しており、
-円形シフトは時間的自己相関を保存する代表的な手法である。
-本研究の時空間置換検定は、この時間的サロゲート法を
-\textbf{空間構造の保存に拡張}したものである。
-具体的には、イベントの時刻を円形シフトしつつ空間スコープを固定することで、
-空間自己相関構造を保ったまま帰無分布を生成する（\ref{sec:st_permtest}節で詳述）。
+Kulldorff~\cite{kulldorff1997spatial}の空間スキャン統計は
+地理的領域における疾患クラスターを検出する代表的手法である。
+矩形窓を用いた時空間拡張~\cite{kulldorff2001prospective}も提案されているが、
+アイテムセットパターンのサポートではなく点過程の密度を対象とし、
+本研究とは問題設定が異なる。
 
 \subsection{本研究の位置づけ}
 
-表~\ref{tab:related}に各関連手法との比較を示す。
-本研究は、(1)~アイテムセットパターンのサポート変動を扱い、
-(2)~空間次元を明示的にモデル化し、
-(3)~統計的検定によるイベント帰属を行う、
-唯一のフレームワークである。
+表~\ref{tab:related}に各手法との比較を示す。
+本研究は、Apriori-Window~\cite{aprioriwindow}の $t$ 軸ストライドと Apriori 枝刈りを
+3次元接頭辞和・XY イベントリストと組み合わせることで、
+時空間アイテムセットの密集領域を効率的に発見する唯一のフレームワークである。
 
 \begin{table}[t]
 \centering
@@ -82,15 +81,16 @@ $\checkmark$: 対応、$\times$: 非対応。}
 \small
 \begin{tabular}{lccc}
 \toprule
-手法 & パターン & 空間 & 帰属検定 \\
+手法 & アイテムセット & 時空間密集領域 & スライディングウィンドウ \\
 \midrule
-1Dイベント帰属~\cite{dsaa2025}        & $\checkmark$ & $\times$     & $\checkmark$ \\
-空間スキャン統計~\cite{kulldorff1997spatial} & $\times$     & $\checkmark$ & $\times$     \\
-DenseAlert~\cite{shin2017densealert}  & $\times$     & $\checkmark$ & $\times$     \\
-コロケーション~\cite{shekhar2001colocation} & $\checkmark$ & $\checkmark$ & $\times$     \\
-イベント・スタディ~\cite{mackinlay1997event} & $\times$     & $\times$     & $\checkmark$ \\
+Apriori~\cite{agrawal1994apriori}               & $\checkmark$ & $\times$     & $\times$     \\
+LPFIM / LPPM / Recur                            & $\checkmark$ & $\times$     & $\checkmark$ \\
+Apriori-Window~\cite{aprioriwindow}             & $\checkmark$ & $\times$ (1D) & $\checkmark$ \\
+空間スキャン統計~\cite{kulldorff1997spatial}     & $\times$     & $\checkmark$ & $\times$     \\
+DenseAlert~\cite{shin2017densealert}             & $\times$     & $\checkmark$ & $\times$     \\
+コロケーション~\cite{shekhar2001colocation}      & $\checkmark$ & $\checkmark$ & $\times$     \\
 \midrule
-\textbf{本研究}                         & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+\textbf{本研究}                                  & $\checkmark$ & $\checkmark$ (3D) & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \end{table}

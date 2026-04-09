@@ -2,134 +2,153 @@
 \section{問題定義}\label{sec:problem}
 % ==============================================================
 
-\subsection{記法}
+本節では、まず Apriori-Window~\cite{aprioriwindow}が扱う1次元設定を
+整理し（\ref{sec:1d_review}節）、
+続いてそれを $d$ 次元に拡張した本研究の問題定義を与える（\ref{sec:nd_extension}節）。
 
-$\mathcal{I} = \{i_1, i_2, \ldots, i_m\}$ を有限のアイテム集合とする。
-$D = [d_1, d_2, \ldots, d_N]$ を時間インデックス $t \in \{1, \ldots, N\}$ で順序付けられたトランザクション列とする。
-各トランザクション $d_t \subseteq \mathcal{I}$ はアイテムの集合である。
-$k$ 個の補助次元（空間座標、店舗ID等）を考え、各次元は有限定義域 $\mathcal{X}_j$ の値をとる。
-各トランザクション $d_t$ は位置 $\mathbf{x}(t) = (x_1(t), \ldots, x_k(t)) \in \mathcal{X} = \prod_j \mathcal{X}_j$ に関連付けられる。
+% ==============================================================
+\subsection{Apriori-Window（1次元）の復習}\label{sec:1d_review}
+% ==============================================================
 
-\subsection{サポート曲面}
+$\mathcal{I} = \{i_1, \ldots, i_m\}$ をアイテム集合、
+$\mathcal{D}_{\mathrm{1D}} = \{(t_n, d_n)\}_{n=1}^N$ を
+タイムスタンプ付きトランザクション列とする。
+$t_n \in \mathbb{Z}_{\geq 0}$ は整数タイムスタンプ（または離散化済みビン）、
+$d_n \subseteq \mathcal{I}$ はアイテム集合である。
 
-\begin{definition}[多次元サポート曲面]\label{def:support_surface}
-パターン $P$、時間窓 $W_0$、空間窓 $W_j$（$j = 1, \ldots, k$）に対し、$P$ の\emph{サポート曲面} $S_P : \mathbb{Z}^{k+1} \to \mathbb{Z}_{\geq 0}$ を
-\begin{equation}\label{eq:support_surface}
-S_P(t, \mathbf{v}) = \bigl|\{d_r \in D \mid t \leq r < t + W_0,\; P \subseteq d_r,\; \mathbf{x}(r) \in \mathrm{Box}(\mathbf{v}, \mathbf{W})\}\bigr|
+パターン $P \subseteq \mathcal{I}$ の\emph{出現集合}を
+$\mathrm{occ}(P) = \{t_n : P \subseteq d_n\}$ と定義する。
+
+\begin{definition}[区間サポート~\cite{aprioriwindow}]\label{def:sup1d}
+ウィンドウ幅 $W_t$ のもとで、ウィンドウ左端 $l$ に対する
+パターン $P$ の\emph{区間サポート}を
+\[
+  \mathrm{sup}(P,\, l,\, W_t)
+  = \bigl|\{t \in \mathrm{occ}(P) : l \leq t < l + W_t\}\bigr|
+\]
+と定義する。
+\end{definition}
+
+\begin{definition}[密集窓・密集区間~\cite{aprioriwindow}]\label{def:dense1d}
+サポート閾値 $\theta$ に対し、
+$\mathrm{sup}(P, l, W_t) \geq \theta$ を満たすとき、
+窓 $[l, l+W_t]$ を $P$ の\emph{密集窓}と呼ぶ。
+密集窓の開始点 $l$ が連続する最長区間 $[s, e]$ を
+$P$ の\emph{密集区間}と呼ぶ。
+\end{definition}
+
+Apriori-Window~\cite{aprioriwindow}は、
+$t$ 軸ストライドによる不要スキャンの排除と
+候補区間の交差に基づく Apriori 枝刈りにより、
+全パターンの密集区間を効率的に列挙する。
+
+% ==============================================================
+\subsection{$d$ 次元への拡張}\label{sec:nd_extension}
+% ==============================================================
+
+本研究では、各トランザクションが時刻 $c_0$（時間軸）に加えて
+$d-1$ 個の追加座標 $(c_1, \ldots, c_{d-1})$（空間・カテゴリなど）を持つ
+\emph{$d$ 次元トランザクションデータ}を対象とする。
+
+\paragraph{記法.}
+$\mathcal{D} = \{(\bm{c}_n, d_n)\}_{n=1}^N$ を
+\emph{$d$ 次元トランザクション列}とする。
+ここで $\bm{c}_n = (c_n^{(0)}, c_n^{(1)}, \ldots, c_n^{(d-1)}) \in \mathbb{R}^d$ は
+座標ベクトル（第0軸は時間）、
+$d_n \subseteq \mathcal{I}$ はアイテム集合である。
+
+\begin{definition}[$d$ 次元ビンインデックス]\label{def:bin_nd}
+ビン幅ベクトル $\bm{\Delta} = (\Delta_0, \ldots, \Delta_{d-1})$ のもとで、
+トランザクション $(\bm{c}, d)$ のビンインデックスを
+\[
+  \bm{b}(\bm{c}) = \bigl(\lfloor c^{(k)} / \Delta_k \rfloor\bigr)_{k=0}^{d-1}
+\]
+と定義する。グリッドサイズを $G = \prod_{k=0}^{d-1} N_k$ とする
+（$N_k$ は第 $k$ 次元のビン数）。
+\end{definition}
+
+\begin{definition}[$d$ 次元アイテム出現グリッド]\label{def:item_grid_nd}
+パターン $P \subseteq \mathcal{I}$ の\emph{出現グリッド} $I_P$ を
+\[
+  I_P[\bm{b}]
+  = \bigl|\{n : \bm{b}(\bm{c}_n) = \bm{b},\; P \subseteq d_n\}\bigr|
+\]
+と定義する。すなわち、ビン $\bm{b}$ において
+パターン $P$ を含むトランザクション数である。
+\end{definition}
+
+\begin{definition}[$d$ 次元スライディングウィンドウサポート]\label{def:support_nd}
+ウィンドウビン幅ベクトル $\bm{W} = (W_0, W_1, \ldots, W_{d-1})$ のもとで、
+グリッド点 $\bm{s} = (s_0, s_1, \ldots, s_{d-1})$ を開始点とする
+ウィンドウ内のパターン $P$ の\emph{サポート}を
+\begin{equation}\label{eq:support_nd}
+  S_P(\bm{s})
+  = \sum_{\bm{b} \in \prod_{k=0}^{d-1} [s_k,\, s_k + W_k)}
+    I_P[\bm{b}]
 \end{equation}
-と定義する。$k = 0$ のとき標準的な1次元サポート時系列に帰着する。
+と定義する。全グリッド点 $\bm{s}$ にわたる $S_P(\bm{s})$ を
+$P$ の\emph{サポートサーフェス}と呼ぶ。
 \end{definition}
 
-\subsection{外部イベントの時空間拡張}
-
-1次元設定のイベント $e = (\textit{id}, \textit{name}, t_s, t_e)$ を時空間に拡張する。
-
-\begin{definition}[時空間外部イベント]\label{def:st_event}
-\emph{時空間外部イベント} $e = (\textit{id}, \textit{name}, t_s, t_e, \mathcal{V}_e)$ は、
-識別子、名称、時間区間 $[t_s, t_e]$、および\emph{空間スコープ}
-$\mathcal{V}_e \subseteq \mathcal{X}$（イベントが影響を及ぼす空間領域）から成る。
-$\mathcal{V}_e = \mathcal{X}$（全域）のとき、1次元設定のイベント定義に帰着する。
-イベント集合を $\mathcal{E} = \{e_1, \ldots, e_K\}$ とする。
-\end{definition}
-
-\begin{example}
-スーパーマーケットチェーンにおいて、「渋谷・新宿エリア限定 夏季キャンペーン」は
-$e = (\text{C01}, \text{夏季}, 150, 250, \{\text{渋谷}, \text{新宿}\})$ と表現される。
-このイベントは店舗次元で$\{$渋谷, 新宿$\}$、時間区間$[150, 250]$にのみ影響する。
-\end{example}
-
-\subsection{時空間変化点}
-
-1次元設定では変化点は閾値交差の時刻 $\tau$ として定義される。
-多次元設定では、変化点に空間的位置が付随する。
-
-\begin{definition}[位置条件付きサポート時系列]\label{def:local_series}
-空間位置 $\mathbf{v} \in \mathcal{X}$ における\emph{位置条件付きサポート時系列}は
-$s_P^{\mathbf{v}}(t) = S_P(t, \mathbf{v})$
-であり、サポート曲面を空間位置 $\mathbf{v}$ で切り出した1次元時系列である。
-\end{definition}
-
-\begin{definition}[時空間変化点]\label{def:st_changepoint}
-位置 $\mathbf{v}$ において、$s_P^{\mathbf{v}}$ の閾値 $\theta$ に関する上昇交差時刻 $\tau$ を
-\emph{時空間変化点} $(\tau, \mathbf{v})$ と呼ぶ。
-すなわち、$s_P^{\mathbf{v}}(\tau) \geq \theta$ かつ $(\tau = 0$ または $s_P^{\mathbf{v}}(\tau-1) < \theta)$ が成立する。
-下降交差も同様に定義する。
-パターン $P$ の時空間変化点の集合を $\mathcal{C}_P = \{(\tau_i, \mathbf{v}_i, \textit{dir}_i)\}$ と表す。
-\end{definition}
-
-\begin{remark}[変化領域]
-同一パターンが近い時刻に複数の空間位置で変化点を持つとき、
-これらは空間的に一貫した変化を表す。
-変化点集合 $\{(\tau_i, \mathbf{v}_i)\}$ のうち時間的に近い（$|\tau_i - \tau_j| \leq \delta_t$）かつ
-空間的に隣接する点の連結成分を\emph{変化領域}と呼ぶ。
-変化領域は「いつ・どこで変化が起きたか」を空間解像度で記述する。
+\begin{remark}[1次元設定への帰着]\label{rem:1d_reduction}
+$d = 1$（時間軸のみ）のとき、$S_P(s_0) = \mathrm{sup}(P, s_0, W_0)$
+（定義~\ref{def:sup1d}）に帰着する。
+すなわち本研究の問題設定は Apriori-Window~\cite{aprioriwindow}の真の拡張である。
+さらに $d = 3$（時間 $\times$ 空間 $x \times$ 空間 $y$）のとき、
+本稿で示す3次元実験結果が得られる。
 \end{remark}
 
-\subsection{時空間帰属スコア}
-
-\begin{definition}[時空間帰属スコア]\label{def:st_score}
-パターン $P$ の時空間変化点 $(\tau, \mathbf{v})$ とイベント $e$ に対し、
-\emph{時空間帰属スコア}を
-\begin{equation}\label{eq:st_score}
-A(P, \tau, \mathbf{v}, e) = \mathrm{prox}_t(\tau, e) \cdot \mathrm{prox}_s(\mathbf{v}, e) \cdot \mathrm{mag}(\tau, \mathbf{v})
-\end{equation}
-と定義する。3つの構成要素は以下の通りである。
-
-\textbf{時間的近接度}:
-\begin{equation}\label{eq:prox_t}
-\mathrm{prox}_t(\tau, e) = \exp\!\left(-\frac{\min(|\tau - t_s|, |\tau - t_e|)}{\sigma_t}\right)
-\end{equation}
-
-\textbf{空間的近接度}:
-\begin{equation}\label{eq:prox_s}
-\mathrm{prox}_s(\mathbf{v}, e) = \begin{cases}
-1 & \text{if } \mathbf{v} \in \mathcal{V}_e \\
-\exp\!\left(-\frac{d_s(\mathbf{v}, \mathcal{V}_e)}{\sigma_s}\right) & \text{otherwise}
-\end{cases}
-\end{equation}
-ここで $d_s(\mathbf{v}, \mathcal{V}_e) = \min_{\mathbf{u} \in \mathcal{V}_e} \|\mathbf{v} - \mathbf{u}\|_1$ はイベント空間スコープまでの$L_1$距離である。
-
-\textbf{変化量}:
-\begin{equation}\label{eq:st_mag}
-\mathrm{mag}(\tau, \mathbf{v}) = |\bar{s}^{+}(\tau, \mathbf{v}) - \bar{s}^{-}(\tau, \mathbf{v})|
-\end{equation}
-$\bar{s}^{\pm}$ は変化点前後の局所平均サポートである（1次元設定と同じ定義を各位置で適用）。
+\begin{definition}[密集セル]\label{def:dense_cell_nd}
+サポート閾値 $\theta$ に対し、
+グリッド点 $\bm{s}$ が
+$S_P(\bm{s}) \geq \theta$ を満たすとき、
+$\bm{s}$ を\emph{密集セル}と呼ぶ。
+パターン $P$ の密集セル集合を
+$\mathcal{L}_\theta(S_P)$ と表す。
 \end{definition}
 
-\begin{remark}[1次元設定への帰着]
-$k = 0$（空間次元なし）かつ $\mathcal{V}_e = \mathcal{X}$ のとき、
-$\mathrm{prox}_s \equiv 1$ となり、式~\eqref{eq:st_score}は
-1次元パイプラインのスコア $A = \mathrm{prox}_t \cdot \mathrm{mag}$ に帰着する。
-\end{remark}
+\begin{definition}[密集領域]\label{def:dense_region_nd}
+密集セル集合 $\mathcal{L}_\theta(S_P)$ の
+$2d$-近傍連結成分（各次元の正負方向 $\pm \bm{e}_k$ を隣接と定義）の
+各成分を\emph{密集領域}と呼ぶ。
+$d = 3$ のとき $2d = 6$ 近傍（辺共有隣接）となる。
+\end{definition}
 
-パターン $P$ のイベント $e$ に対する観測帰属スコアは、
-全変化点にわたる総和とする：
-\begin{equation}\label{eq:obs_score}
-A_{\mathrm{obs}}(P, e) = \sum_{(\tau, \mathbf{v}) \in \mathcal{C}_P} A(P, \tau, \mathbf{v}, e).
-\end{equation}
+1次元の「密集区間」（定義~\ref{def:dense1d}）は、
+$d = 1$ のときの密集領域に対応する。
 
-\subsection{時空間イベント帰属問題}
+\paragraph{Apriori 包含定理.}
 
-\begin{problem}[時空間イベント帰属]\label{prob:st_attribution}
-\textbf{入力}：位置付きトランザクション列 $D$、
-窓サイズ $(W_0, \mathbf{W})$、閾値 $\theta$、最大パターン長 $L_{\max}$、
-時空間イベント集合 $\mathcal{E}$、有意水準 $\alpha$。
+\begin{lemma}[密集領域の単調性]\label{lem:apriori}
+任意のパターン $P$ とその部分集合 $Q \subset P$ に対して、
+$\mathcal{L}_\theta(S_P) \subseteq \mathcal{L}_\theta(S_Q)$ が成立する。
+\end{lemma}
 
-\textbf{出力}：$s_P^{\mathbf{v}}$ の閾値交差変化点がイベント $e$ の時間窓および空間スコープと
-統計的に有意に関連する全ての組 $(P, e)$ を、
-偽発見率（FDR）を水準 $\alpha$ 以下に制御しながら同定する。
+\begin{proof}
+任意のビン $\bm{b}$ に対し、$P \subseteq d_n$ ならば $Q \subseteq d_n$ であるから
+$I_P[\bm{b}] \leq I_Q[\bm{b}]$。
+接頭辞和の単調性より $S_P(\bm{s}) \leq S_Q(\bm{s})$。
+\end{proof}
+
+補題~\ref{lem:apriori}は Apriori-Window の候補区間交差枝刈り~\cite{aprioriwindow}の
+$d$ 次元版であり、$k \geq 2$ の枝刈りの根拠である（\ref{sec:alg_k2}節）。
+
+\subsection{$d$ 次元密集領域検出問題}
+
+\begin{problem}[$d$ 次元密集領域検出]\label{prob:dense_detection}
+\textbf{入力}：$d$ 次元トランザクション列 $\mathcal{D}$、
+ビン幅 $\bm{\Delta} \in \mathbb{R}^d$、
+ウィンドウビン数 $\bm{W} \in \mathbb{Z}_{>0}^d$、
+サポート閾値 $\theta$、最大パターン長 $L_{\max}$。
+
+\textbf{出力}：
+各パターン $P$ に対し、$P$ の密集領域の全集合
+$\{\mathcal{R}_1, \mathcal{R}_2, \ldots\}$（各 $\mathcal{R}_j$ は密集セルの連結成分）。
 \end{problem}
 
-本問題の主要な課題は以下の4点である：
-\begin{enumerate}
-\item \textbf{仮説空間の爆発}：$|\mathcal{F}| \times |\mathcal{E}|$ 個のパターン--イベント対に加え、
-各対が複数の空間位置で独立に帰属しうるため、多重検定の負荷が1次元設定より大きい。
-
-\item \textbf{空間自己相関}：近接する空間位置のサポート時系列は正に相関するため、
-変化点が空間的にクラスター化し、独立性仮定に基づく検定は過度に楽観的になる。
-
-\item \textbf{副次パターン問題}：1次元設定と同様、アイテムを共有するパターン間でサポートが連動変動する。
-
-\item \textbf{イベントの空間的部分影響}：イベントが一部の空間領域にのみ影響する場合、
-全域で集約したサポートでは信号が希釈される（空間的混同）。
-\end{enumerate}
+問題~\ref{prob:dense_detection}の計算量は
+サポートサーフェス $S_P$ の計算コストに支配される。
+単純実装の $O\!\left(M \cdot G \cdot \prod_{k=0}^{d-1} W_k\right)$ を
+提案アルゴリズム（\ref{sec:method}節）では
+$O\!\left(M \cdot G + N \cdot \prod_{k=1}^{d-1} W_k\right)$ に削減する
+（第0軸を時間軸 $t$ とする）。

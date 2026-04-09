@@ -7,6 +7,7 @@
 \textbf{RQ2}: データサイズ $N$ に対して計算時間はどうスケールするか？
 \textbf{RQ3}: 各高速化技術はどの程度の効果をもたらすか？（アブレーション）
 \textbf{RQ4}: 既存手法（FIM、1次元 AW、Span\_3D、MZoom\_3D）と比べてどの程度優れているか？
+\textbf{RQ5}: 次元数 $d$ の増加に対して計算時間はどうスケールするか？
 
 \subsection{実験環境}
 
@@ -248,6 +249,46 @@ MZoom\_3D    & $\mathbf{1.000} \pm 0.000$ & $\mathbf{1.000} \pm 0.000$ & $\mathb
 唯一の手法として常に正確な3パターン検出を実現した。
 時空間スライディングウィンドウサポートにより、
 空間的に局在した密集アイテムセット領域を偽陽性なく発見できる。
+
+\subsection{EX-E: 次元数スケーラビリティ}\label{sec:ex_e}
+
+\paragraph{目的.}
+次元数 $d$ の増加が計算時間に与える影響を定量化する（RQ5）。
+
+\paragraph{実験設計.}
+$N = 10{,}000$ トランザクション固定、
+$d \in \{2, 3, 4, 5\}$ を変化させる。
+各次元のビンサイズ $\Delta_k = 1.0$、
+ウィンドウサイズ $W_k = 3$（全次元統一）、
+閾値 $\theta = 3$、$L_{\max} = 2$。
+座標範囲は各次元 $[0, 50]$ に統一し、
+密集領域は3件植え付ける（各次元の中心・ジッタを適宜設定）。
+5シードの平均実行時間を計測する。
+
+\paragraph{結果.}
+表~\ref{tab:ex_e}に結果を示す。
+
+\begin{table}[t]
+\centering
+\caption{EX-E: 次元数 $d$ に対するスケーラビリティ
+（$N{=}10{,}000$、$W_k{=}3$、$\theta{=}3$、5シード平均）。}
+\label{tab:ex_e}
+\small
+\begin{tabular}{rrrr}
+\toprule
+$d$ & グリッドサイズ $G$ & 実行時間 (s) & 備考 \\
+\midrule
+2 & $50 \times 50$           & \textit{TBD} & 1D-AW 相当 \\
+3 & $50 \times 50 \times 50$ & \textit{TBD} & 本稿 EX-B 相当 \\
+4 & $50^4$                   & \textit{TBD} & \\
+5 & $50^5$                   & \textit{TBD} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{分析.}
+(RQ5)
+\textit{[実装完了後に実測値で更新]}
 
 \subsection{考察}\label{sec:discussion}
 

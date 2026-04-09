@@ -1,140 +1,240 @@
 % ==============================================================
-\section{提案手法}\label{sec:method}
+\section{提案手法: $d$ 次元 Apriori-Window アルゴリズム}
+\label{sec:method}
 % ==============================================================
 
-問題~\ref{prob:st_attribution}を解くための
-\textbf{時空間イベント帰属パイプライン}を提案する。
-パイプラインは以下の6ステップから成る（図~\ref{fig:pipeline}）。
+問題~\ref{prob:dense_detection}を解くための
+\textbf{$d$ 次元 Apriori-Window アルゴリズム}を提案する。
+以下の3つの高速化技術を組み合わせ（Algorithm~\ref{alg:md_apriori}）、
+計算量を
+$O\!\left(M \cdot G + N \cdot \prod_{k=1}^{d-1} W_k\right)$ に抑える
+（第0軸を時間軸 $t$ とする）。
+各技術は Apriori-Window~\cite{aprioriwindow}の
+対応する1次元技術の直接拡張である（表~\ref{tab:correspondence}）。
 
-\input{fig/pipeline}
+\begin{table}[t]
+\centering
+\caption{Apriori-Window~\cite{aprioriwindow}と本研究の技術対応表。}
+\label{tab:correspondence}
+\small
+\begin{tabular}{ll}
+\toprule
+Apriori-Window（1次元）& 本研究（$d$ 次元）\\
+\midrule
+累積サム $O(1)$ 区間クエリ & $d$ 次元接頭辞和 $O(2^d)$ ウィンドウクエリ \\
+$t$ 軸ストライド（$k=1$） & 空間イベントリスト + $t$ 軸ストライド（$k=1$）\\
+候補区間交差による枝刈り & 候補セル集合交差による枝刈り（$k\geq2$）\\
+密集区間（1次元連結成分） & 密集領域（$2d$-近傍連結成分）\\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Step 1: サポート曲面の計算}
+% ==============================================================
+\subsection{$d$ 次元接頭辞和による $O(2^d)$ ウィンドウクエリ}\label{sec:prefix_sum}
+% ==============================================================
 
-各パターン $P$（$|P| \geq 2$）に対し、接頭辞和に基づく
-$O(G \cdot 2^{k+1} + N)$ のアルゴリズムでサポート曲面 $S_P$ を計算する。
+出現グリッド $I_P$（サイズ $\prod N_k$）に対し、
+各次元を $+1$ パディングした $d$ 次元接頭辞和 $\mathrm{PS}_P$（サイズ $\prod (N_k+1)$）を構築する：
+\begin{equation}\label{eq:prefix_sum}
+  \mathrm{PS}_P[\bm{b}]
+  = \sum_{\bm{b}' \prec \bm{b}} I_P[\bm{b}'],
+\end{equation}
+ここで $\bm{b}' \prec \bm{b}$ は成分ごとに $b'_k < b_k$（全次元）を意味する。
+$\mathrm{PS}_P$ は各次元を順番に累積和をとることで $O(G)$ で構築できる。
+構築後、任意のウィンドウサポートは $2^d$ コーナーの包除原理により
+\begin{equation}\label{eq:query}
+  S_P(\bm{s})
+  = \sum_{\bm{c} \in \{0,1\}^d}
+    (-1)^{d - |\bm{c}|_1}
+    \mathrm{PS}_P[\bm{s} + \bm{c} \odot \bm{W}]
+\end{equation}
+で $O(2^d)$ に取得できる（$\bm{c} \odot \bm{W}$ は成分積）。
+$k \geq 2$ ではこれを全グリッド点に適用し、
+サポートサーフェス $S_P$ を $O(2^d \cdot G)$ で計算する。
+実用的な $d$（$\leq 5$ 程度）では $2^d$ は定数とみなせる。
 
-$(k{+}1)$ 次元の指示配列 $I[t, \mathbf{x}(t)]$（パターンを含むトランザクション数）を構築し、
-各次元に沿って接頭辞和を取った後、$2^{k+1}$ 個の角に対する包除原理により
-任意のグリッド点でのウィンドウ合計を求める。
+% ==============================================================
+\subsection{$t$ 軸 1 次元ストライド最適化（$k = 1$）}\label{sec:t_stride}
+% ==============================================================
 
-\paragraph{候補パターンの枝刈り.}
-以下の密集領域包含定理を用いて候補を削減する：
-パターン $P$ の任意の $(|P|-1)$-部分集合 $Q$ に対して
-$\mathcal{L}_\theta(S_P) \subseteq \mathcal{L}_\theta(S_Q)$ が成立するため、
-$Q$ に密集領域がなければ $P$ も密集領域を持たない（Apriori枝刈り）。
+$k = 1$（単体アイテム）の密集セル検出では、
+Apriori-Window の $t$ 軸ストライド~\cite{aprioriwindow}を
+各空間ウィンドウ $(x_s, y_s)$ に独立に適用する。
 
-\subsection{Step 2: 位置別変化点の検出}
-
-サポート曲面の各空間スライス $s_P^{\mathbf{v}}(t) = S_P(t, \mathbf{v})$ に対して、
-1次元パイプラインと同じ閾値交差法で変化点を検出する。
-各変化点 $(\tau, \mathbf{v})$ に対し、局所平均 $\bar{s}^{\pm}(\tau, \mathbf{v})$ から
-変化量 $\mathrm{mag}(\tau, \mathbf{v})$ を計算する。
-
-\paragraph{フィルタリング.}
-仮説空間削減のため以下のフィルタを適用する：
-\begin{itemize}
-\item \emph{サポート振幅フィルタ}: $\max_t s_P^{\mathbf{v}}(t) - \min_t s_P^{\mathbf{v}}(t) < \delta$ の位置を除外。
-\item \emph{変化量フィルタ}: $\mathrm{mag}(\tau, \mathbf{v}) < \mu_{\min}$ の変化点を除外。
-\end{itemize}
-
-\subsection{Step 3: 時空間帰属スコアリング}
-
-各パターン $P$、変化点 $(\tau, \mathbf{v})$、イベント $e$ に対し、
-式~\eqref{eq:st_score}の時空間帰属スコアを計算する：
+\paragraph{空間イベントリストの構築.}
+トランザクション $(\bm{c}_n, d_n)$（ビン化後: $\bm{b}_n$）がアイテム $i$ を含む場合、
+$i$ が関係する空間ウィンドウ開始点の第 $k$ 成分（$k \geq 1$）の範囲は
 \[
-A(P, \tau, \mathbf{v}, e) = \mathrm{prox}_t(\tau, e) \cdot \mathrm{prox}_s(\mathbf{v}, e) \cdot \mathrm{mag}(\tau, \mathbf{v}).
+  s_k \in [\max(0,\, b_n^{(k)} - W_k + 1),\; b_n^{(k)}]
 \]
+であるから、全空間次元の組み合わせ $(s_1, \ldots, s_{d-1})$ に
+$b_n^{(0)}$（時間ビン）を追加する。
+構築コストは $O\!\left(N_i \cdot \prod_{k=1}^{d-1} W_k\right)$。
+$d = 1$（時間のみ）のとき単一リスト $L_i() = \mathrm{occ}(\{i\})$ に帰着する。
 
-パターン $P$ とイベント $e$ の観測スコア $A_{\mathrm{obs}}(P, e)$ は
-全変化点にわたる総和である（式~\eqref{eq:obs_score}）。
-この集約は、イベントの空間スコープ内にある変化点ほど高い
-$\mathrm{prox}_s$ を持つため、
-空間的に局在するイベント効果を自動的に強調する。
+\paragraph{$t$ 軸ストライド.}
+各 $(x_s, y_s)$ について、ソート済みリスト $L_i(x_s, y_s)$ に対し
+ウィンドウ左端 $l$ を動かして密集窓の開始点を求める
+（Algorithm~\ref{alg:t_stride}）。
+本アルゴリズムは Apriori-Window の $t$ 軸ストライドと同一の
+ジャンプ規則を使用する。
 
-\subsection{Step 4: 時空間置換検定}\label{sec:st_permtest}
-
-\subsubsection{設計原理}
-
-帰無仮説 $H_0$:「変化点の時空間位置はイベントと無関係である」を検定するために、
-イベントの時刻をランダムにシフトする置換を行う。
-1次元パイプラインの円形シフト（時刻のみランダム化）を時空間に拡張する際、
-以下の設計判断を行う：
-
-\begin{itemize}
-\item \textbf{時間軸}：円形シフト（オフセット $\delta \sim \mathrm{Uniform}\{1, \ldots, T-1\}$）。
-これにより時間的自己相関構造が保存される。
-\item \textbf{空間軸}：イベントの空間スコープ $\mathcal{V}_e$ を\textbf{固定}する。
-空間スコープは外生的に与えられた既知情報であり、ランダム化の対象ではない。
-\end{itemize}
-
-この「時間シフト・空間固定」方式は、帰無仮説を
-「イベントの\emph{時刻}が変化点と無関係」と定式化することに対応する。
-空間スコープの一致は帰無仮説下でも保持されるため、
-空間的近接度 $\mathrm{prox}_s$ は置換を通じて同一の値をとり、
-検定は時間的近接度 $\mathrm{prox}_t$ と変化量 $\mathrm{mag}$ の偶然の一致を評価する。
-
-\subsubsection{置換アルゴリズム}
-
-$B$ 回の置換を実行する。各置換 $b$ では：
-\begin{enumerate}
-\item ランダムオフセット $\delta_b \sim \mathrm{Uniform}\{1, \ldots, T-1\}$ を生成。
-\item 全イベントの時刻を一斉にシフト：$t_s^{(b)} = (t_s + \delta_b) \bmod T$,
-$t_e^{(b)} = (t_s^{(b)} + \Delta) \bmod T$。空間スコープ $\mathcal{V}_e$ は不変。
-\item シフト後のイベントで帰属スコア $A_{\mathrm{perm}}^{(b)}(P, e)$ を再計算。
-\end{enumerate}
-
-未補正 $p$ 値：
-\begin{equation}\label{eq:pvalue}
-p_{\mathrm{raw}}(P, e) = \frac{1 + |\{b : A_{\mathrm{perm}}^{(b)}(P, e) \geq A_{\mathrm{obs}}(P, e)\}|}{B + 1}.
+ウィンドウ $[l, l+W_t)$ 内のカウント $c$ が $\theta$ 未満の場合、
+次のイベントを含む最小の窓開始点へジャンプする：
+\begin{equation}\label{eq:jump_empty}
+  l \leftarrow \max(l+1,\; L_i(x_s,y_s)[\mathrm{next}] - W_t + 1).
 \end{equation}
-
-\begin{remark}[空間自己相関の処理]\label{rem:spatial_autocorr}
-空間スコープを固定する方式により、
-空間自己相関は帰無分布の生成にそのまま反映される。
-すなわち、置換スコア $A_{\mathrm{perm}}^{(b)}$ も観測スコアと同じ空間的相関構造を持つ。
-これは1次元パイプラインで時間的自己相関を円形シフトにより保存するのと
-同じ原理（サロゲートデータ法~\cite{lancaster2018surrogate}）に基づく。
-\end{remark}
-
-\subsection{Step 5: グローバルBH補正}
-
-$M = |\mathcal{F}'| \times |\mathcal{E}|$ 個の仮説を同時に検定する。
-未補正 $p$ 値を昇順にソートし $p_{(1)} \leq \cdots \leq p_{(M)}$ とする。
-Benjamini--Hochberg~\cite{benjamini1995controlling}の step-down 手続きにより
-調整済み $p$ 値を計算する：
-\begin{equation}\label{eq:bh}
-\tilde{p}_{(i)} = \min\!\left(\tilde{p}_{(i+1)},\; \min\!\left(1,\; p_{(i)} \cdot \frac{M}{i}\right)\right),
-\quad \tilde{p}_{(M)} = \min(1, p_{(M)}).
+カウント $c > \theta$ の場合（余剰 $\mathrm{surplus} = c - \theta$ 個）、
+左端から $\mathrm{surplus}$ 番目のイベントの時刻へジャンプする：
+\begin{equation}\label{eq:jump_dense}
+  l \leftarrow L_i(x_s, y_s)[l_{\mathrm{lo}} + \mathrm{surplus}].
 \end{equation}
-$\tilde{p}_{(i)} < \alpha$ の仮説を棄却（帰属が有意）と判定する。
+$l_{\mathrm{lo}}$ はリスト中で $l$ 以上の最初のインデックスである。
 
-\begin{remark}[PRDS条件]
-アイテムを共有するパターンのサポートは正に相関するため、
-$p$ 値は部分集合上の正回帰依存性（PRDS）条件を満たし、
-BH手続きによるFDR制御は非独立な場合にも有効である~\cite{benjamini2001control}。
-\end{remark}
+\begin{lemma}[ストライドの正確性]\label{lem:stride}
+式~\eqref{eq:jump_dense} のジャンプ先 $l'$ に対し、
+全ての $l'' \in (l, l')$ についても $c(l'') \geq \theta$ が成立する。
+すなわち、スキップされた位置も全て密集窓の開始点である。
+\end{lemma}
 
-\subsection{Step 6: アイテム重複排除}
+\begin{proof}
+$l' = L_i[l_{\mathrm{lo}} + \mathrm{surplus}]$ とおく。
+任意の $l'' \in (l, l')$ に対し、
+ウィンドウ左端を $l$ から $l''$ に進めると
+$L_i[l_{\mathrm{lo}}], \ldots, L_i[l_{\mathrm{lo}} + \mathrm{surplus} - 1]$
+のうち $l''$ 未満の要素がウィンドウから脱出するが、
+$L_i[l_{\mathrm{lo}} + \mathrm{surplus}] = l' > l''$ より
+$L_i[l_{\mathrm{lo}} + \mathrm{surplus}]$ はまだウィンドウ内に残る。
+したがって $c(l'') \geq c(l) - \mathrm{surplus} = \theta$。
+\end{proof}
 
-1次元パイプラインと同様に、副次パターン問題を
-Union-Findクラスタリングにより解決する。
-各イベント $e$ について有意帰属されたパターンを収集し、
-アイテムを共有するパターン間にエッジを張った
-共有グラフの連結成分を求め、
-各成分内で帰属スコア最大のパターンのみを残す。
+補題~\ref{lem:stride}は Apriori-Window の命題~3~\cite{aprioriwindow}の
+$d$ 次元版であり、スキップ区間内の密集窓の開始点を
+陽に評価せずとも補填により正確に列挙できることを示す。
 
-\subsection{計算量分析}
+\begin{algorithm}[t]
+\caption{$t$ 軸 1 次元ストライドによる密集ウィンドウ開始点列挙}
+\label{alg:t_stride}
+\begin{algorithmic}[1]
+\Require ソート済みイベントリスト $L$、ウィンドウ幅 $W_t$、閾値 $\theta$
+\Ensure 密集ウィンドウ開始点の集合 $\mathcal{S}$
+\State $\mathcal{S} \leftarrow \emptyset$,\quad
+       $l \leftarrow L[0] - (W_t - 1)$,\quad
+       $\mathit{prev} \leftarrow \mathrm{nil}$
+\While{$l \leq L[\mathrm{last}]$}
+  \State $l_{\mathrm{lo}} \leftarrow \mathrm{lower\_bound}(L, l)$,\quad
+         $l_{\mathrm{hi}} \leftarrow \mathrm{upper\_bound}(L, l + W_t - 1)$
+  \State $c \leftarrow l_{\mathrm{hi}} - l_{\mathrm{lo}}$
+  \If{$c \geq \theta$}
+    \If{$\mathit{prev} \neq \mathrm{nil}$}
+      \State $\mathcal{S} \leftarrow \mathcal{S} \cup \{\mathit{prev}+1, \ldots, l-1\}$
+             \Comment{ストライドで飛ばした区間を補填}
+    \EndIf
+    \State $\mathcal{S} \leftarrow \mathcal{S} \cup \{l\}$,\quad $\mathit{prev} \leftarrow l$
+    \If{$c > \theta$}
+      \State $l \leftarrow \max(l+1, L[l_{\mathrm{lo}} + (c - \theta)])$
+             \Comment{式~\eqref{eq:jump_dense}}
+    \Else
+      \State $l \leftarrow l + 1$
+    \EndIf
+  \Else
+    \State $\mathit{prev} \leftarrow \mathrm{nil}$
+    \State $l \leftarrow \max(l+1, L[l_{\mathrm{hi}}] - W_t + 1)$
+           \Comment{式~\eqref{eq:jump_empty}；$L[l_{\mathrm{hi}}]$ が次イベント}
+  \EndIf
+\EndWhile
+\Return $\mathcal{S}$
+\end{algorithmic}
+\end{algorithm}
 
-パイプライン全体の時間計算量は以下の通りである：
-\begin{itemize}
-\item \textbf{Step 1}（サポート曲面）: $O(|\mathcal{F}| \cdot (G \cdot 2^{k+1} + N))$
-\item \textbf{Step 2}（変化点検出）: $O(|\mathcal{F}| \cdot G)$（各グリッド点を1回走査）
-\item \textbf{Step 3--4}（帰属＋置換検定）: $O(|\mathcal{F}'| \cdot |\mathcal{E}| \cdot B \cdot |\mathcal{C}_P|)$
-\item \textbf{Step 5--6}（BH＋重複排除）: $O(M \log M + R \cdot k_{\max})$
-\end{itemize}
-ここで $G = \prod_j T_j$ はグリッドサイズ、$B$ は置換回数、
-$|\mathcal{C}_P|$ は平均変化点数、$R$ は有意結果数、$k_{\max}$ はパターン最大長である。
+% ==============================================================
+\subsection{Apriori 枝刈りによる候補セル限定（$k \geq 2$）}\label{sec:alg_k2}
+% ==============================================================
 
-Step 1 が支配的であり、パターン数とグリッドサイズに線形にスケールする。
-サポート振幅フィルタにより $|\mathcal{F}'| \ll |\mathcal{F}|$ となるため、
-Step 3--4 の計算量は実用上小さい。
+$k \geq 2$ のパターン $P = \{i_1, \ldots, i_k\}$ について、
+補題~\ref{lem:apriori} より
+\begin{equation}\label{eq:candidate_cells}
+  \mathcal{L}_\theta(S_P)
+  \subseteq \bigcap_{Q \subset P,\, |Q|=k-1} \mathcal{L}_\theta(S_Q).
+\end{equation}
+右辺の交差集合を\emph{候補セル集合} $\mathcal{C}(P)$ と定義する。
+これは Apriori-Window の「候補区間交差」~\cite{aprioriwindow}の $d$ 次元版であり、
+密集セル集合の交差として定式化される。
+$\mathcal{C}(P) = \emptyset$ ならば $P$ の密集セルは存在しないと確定し、
+$I_P$ の構築・接頭辞和の計算を省略できる。
+
+$\mathcal{C}(P) \neq \emptyset$ の場合は、
+$\mathcal{C}(P)$ 内のトランザクションのみを走査して $I_P$ を構築し（$O(N)$）、
+接頭辞和 $\mathrm{PS}_P$（$O(G)$）・サポート曲面（$O(G)$）を計算する。
+
+% ==============================================================
+\subsection{アルゴリズム全体と計算量}\label{sec:complexity}
+% ==============================================================
+
+\begin{algorithm}[t]
+\caption{$d$ 次元 Apriori-Window アルゴリズム}
+\label{alg:md_apriori}
+\begin{algorithmic}[1]
+\Require $d$ 次元トランザクション $\mathcal{D}$、パラメータ $(\bm{W}, \theta, L_{\max})$
+\Ensure 各パターン $P$ の密集領域集合 $\{\mathcal{R}_P\}$
+\State \textbf{離散化}: $\mathcal{D}$ を $(\bm{b}_n, d_n)$ に変換、グリッドサイズ $(N_0, \ldots, N_{d-1})$ を決定
+\ForAll{$i \in \mathcal{I}$ \textbf{in parallel}}  \Comment{$k=1$; Rayon 並列}
+  \State $L_i(\bm{s}_{1:}) \leftarrow $ 空間イベントリスト構築（\S\ref{sec:t_stride}）
+  \ForAll{$\bm{s}_{1:} \in \prod_{k=1}^{d-1} [0, N_k)$}
+    \If{$L_i(\bm{s}_{1:}) \neq \emptyset$}
+      \State $\mathcal{S} \leftarrow $ \Call{TStrideStarts}{$L_i(\bm{s}_{1:}), W_0, \theta$}
+             \Comment{Algorithm~\ref{alg:t_stride}}
+      \State 各 $s_0 \in \mathcal{S}$ を密集セル集合 $D_i$ に追加
+    \EndIf
+  \EndFor
+  \State $\mathcal{R}_{\{i\}} \leftarrow$ $2d$-近傍 Union-Find 連結成分 of $D_i$
+\EndFor
+\State $\mathcal{F}_1 \leftarrow \{\{i\} : \mathcal{R}_{\{i\}} \neq \emptyset\}$
+\While{$\mathcal{F}_{k-1} \neq \emptyset$ \textbf{and} $k \leq L_{\max}$}  \Comment{$k \geq 2$}
+  \State \texttt{cands} $\leftarrow$ \Call{GenerateCandidates}{$\mathcal{F}_{k-1}$}
+  \State \texttt{cands} $\leftarrow$ \Call{PruneCandidates}{\texttt{cands}, $\mathcal{F}_{k-1}$}
+  \ForAll{$P \in$ \texttt{cands} \textbf{in parallel}}
+    \State $\mathcal{C}(P) \leftarrow \bigcap_{Q \subset P,|Q|=k-1} \mathcal{L}_\theta(S_Q)$
+           \Comment{式~\eqref{eq:candidate_cells}}
+    \If{$\mathcal{C}(P) = \emptyset$} \textbf{continue} \EndIf
+    \State $I_P \leftarrow$ \Call{BuildItemGrid}{$\mathcal{D}, P, \mathcal{C}(P)$}
+    \State $\mathrm{PS}_P \leftarrow$ \Call{BuildPrefixSumND}{$I_P$}
+    \State $S_P \leftarrow$ \Call{ComputeSupportSurface}{$\mathrm{PS}_P, \bm{W}$}
+    \State $\mathcal{R}_P \leftarrow$ $2d$-近傍 Union-Find 連結成分 of
+           $\{\bm{s} : S_P(\bm{s}) \geq \theta\}$
+  \EndFor
+  \State $\mathcal{F}_k \leftarrow \{P : \mathcal{R}_P \neq \emptyset\}$,\quad
+         $k \leftarrow k + 1$
+\EndWhile
+\Return $\{R_P : P \in \bigcup_k \mathcal{F}_k\}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{table}[t]
+\centering
+\caption{$d$ 次元 Apriori-Window 各ステップの計算量。
+$N$: トランザクション数、$G = \prod_{k=0}^{d-1} N_k$、
+$W_{\mathrm{sp}} = \prod_{k=1}^{d-1} W_k$（空間ウィンドウ積）、$C_k$: $k$ 段候補数。}
+\label{tab:complexity}
+\small
+\begin{tabular}{lll}
+\toprule
+ステップ & 計算量 & 備考 \\
+\midrule
+離散化 & $O(N)$ & \\
+$k=1$: 空間イベントリスト構築 & $O(N \cdot W_{\mathrm{sp}})$ & 全アイテム合計 \\
+$k=1$: $t$ 軸ストライド & $O(|\mathcal{S}_i| + \log N_i)$ per 空間キー & $|\mathcal{S}_i|$: 密集点数 \\
+$k \geq 2$: 接頭辞和構築 & $O(2^d \cdot G)$ per 候補 & Apriori 枝刈り後 \\
+$k \geq 2$: $I_P$ 構築 & $O(N)$ per 候補 & \\
+連結成分 & $O(|\mathcal{L}| \cdot \alpha)$ per パターン & $\alpha$: 逆アッカーマン \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+支配的コストは $k=1$ の空間イベントリスト構築 $O(N W_{\mathrm{sp}})$ と、
+$k \geq 2$ の接頭辞和構築 $O(C_k \cdot 2^d \cdot G)$（$C_k$: Apriori 枝刈り後の候補数）である。
+ナイーブ実装の $O\!\left(M \cdot G \cdot \prod_{k=0}^{d-1} W_k\right)$ に対して、
+$t$ 軸ストライドはウィンドウ幅方向の削減、
+Apriori 枝刈りはパターン次元の削減を担う。
+次元数 $d$ が増えると $2^d$ と $G$ の双方が増加するが、
+実用的な範囲（$d \leq 5$）では管理可能である（EX-E; \ref{sec:ex_e}節）。
