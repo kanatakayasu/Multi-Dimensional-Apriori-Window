@@ -1,0 +1,89 @@
+% ==============================================================
+\section{関連研究}\label{sec:related}
+% ==============================================================
+
+本研究は、時空間トランザクションデータから密集アイテムセット領域を発見する問題を扱う。
+この問題は複数の研究領域にまたがるため、
+各領域の代表的手法と本研究の相違点を整理する。
+
+\subsection{頻出パターンマイニングとAprioriアルゴリズム}
+
+Agrawal ら~\cite{agrawal1994apriori}のAprioriアルゴリズムは、
+アイテムセットの単調性（部分集合は常に親集合以上のサポートを持つ）を利用した
+枝刈りにより、候補数を大幅に削減する。
+Han ら~\cite{han2000mining}のFP-Growthは接頭辞木を用いてさらに高速化する。
+これらは静的なトランザクションデータベースを対象とし、
+時間的・空間的なパターン分布の変化は扱わない。
+
+本研究は Apriori の枝刈り原理を $d$ 次元密集セル集合に拡張し、
+候補セルの交差集合が空の場合に $I_P$ 構築を省略する（\S\ref{sec:alg_k2}）。
+
+\subsection{Apriori-Window（直接の前身研究）}
+
+Apriori-Window~\cite{aprioriwindow}は、
+タイムスタンプ付きトランザクションデータに対して
+スライディングウィンドウサポートが閾値を超える密集区間を
+直接かつ厳密に発見するアルゴリズムである。
+$t$ 軸ストライドにより非密集区間を効率的にスキップし、
+Apriori 枝刈りにより $(k{-}1)$-部分集合に密集区間がないパターンを早期除去する。
+比較実験では LPFIM~\cite{han2000mining}、LPPM、Recur を大幅に上回る性能を示した。
+
+本研究はこの手法を1次元（時間軸のみ）から
+任意の $d$ 次元（時間 + $d{-}1$ 個の空間・カテゴリ次元）に拡張する。
+全空間次元のウィンドウ幅を1とすると本研究の問題設定・アルゴリズムは
+Apriori-Window に帰着する（注意~\ref{rem:1d_reduction}、補題~\ref{lem:stride}）。
+
+\subsection{時空間パターンマイニング}
+
+軌跡パターンマイニング~\cite{giannotti2007trajectory}は
+移動オブジェクトの軌跡から時空間パターンを発見する。
+空間コロケーションマイニング~\cite{shekhar2001colocation}は
+空間的に共起する特徴を発見する。
+これらは空間的分布を扱うが、
+スライディングウィンドウによるサポートの時空間集計や
+密集領域の連結成分抽出は対象としない。
+
+\subsection{密部分テンソルマイニング}
+
+DenseAlert~\cite{shin2017densealert}やM-Zoom~\cite{shin2018mzoom}は
+多次元テンソルにおける密ブロックを検出する。
+これらはテンソル全体のランク分解に基づく異常検出が主目的であり、
+アイテムセットパターンのスライディングウィンドウサポートや
+$2d$-近傍連結成分としての密集領域抽出は扱わない。
+
+\subsection{空間スキャン統計}
+
+Kulldorff~\cite{kulldorff1997spatial}の空間スキャン統計は
+地理的領域における疾患クラスターを検出する代表的手法である。
+矩形窓を用いた時空間拡張~\cite{kulldorff2001prospective}も提案されているが、
+アイテムセットパターンのサポートではなく点過程の密度を対象とし、
+本研究とは問題設定が異なる。
+
+\subsection{本研究の位置づけ}
+
+表~\ref{tab:related}に各手法との比較を示す。
+本研究は、Apriori-Window~\cite{aprioriwindow}の $t$ 軸ストライドと Apriori 枝刈りを
+$d$ 次元接頭辞和・空間イベントリストと組み合わせることで、
+多次元トランザクションデータから密集アイテムセット領域を効率的に発見する唯一のフレームワークである。
+
+\begin{table}[t]
+\centering
+\caption{関連手法との比較。
+$\checkmark$: 対応、$\times$: 非対応。}
+\label{tab:related}
+\small
+\begin{tabular}{lccc}
+\toprule
+手法 & アイテムセット & 時空間密集領域 & スライディングウィンドウ \\
+\midrule
+Apriori~\cite{agrawal1994apriori}               & $\checkmark$ & $\times$     & $\times$     \\
+LPFIM / LPPM / Recur                            & $\checkmark$ & $\times$     & $\checkmark$ \\
+Apriori-Window~\cite{aprioriwindow}             & $\checkmark$ & $\times$ (1D) & $\checkmark$ \\
+空間スキャン統計~\cite{kulldorff1997spatial}     & $\times$     & $\checkmark$ & $\times$     \\
+DenseAlert~\cite{shin2017densealert}             & $\times$     & $\checkmark$ & $\times$     \\
+コロケーション~\cite{shekhar2001colocation}      & $\checkmark$ & $\checkmark$ & $\times$     \\
+\midrule
+\textbf{本研究}                                  & $\checkmark$ & $\checkmark$ ($d$次元) & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
