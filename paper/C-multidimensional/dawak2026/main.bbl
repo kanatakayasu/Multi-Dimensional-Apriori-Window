@@ -1,0 +1,51 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{agrawal1994apriori}
+Agrawal, R., Srikant, R.: Fast algorithms for mining association rules. In:
+  Proceedings of VLDB. pp. 487--499 (1994)
+
+\bibitem{aprioriwindow}
+Anonymous:
+  スライディング窓による区間局所頻度の直接評価を用いた密集パターンの厳密抽出.
+  In: Proceedings of DSAA (2025), under review
+
+\bibitem{dsaa2025}
+Anonymous:
+  頻出パターンの変動はなぜ起きたか？サポート時系列と外部イベントの統計的帰属パイプライン.
+  In: Proceedings of DSAA (2025), under review
+
+\bibitem{giannotti2007trajectory}
+Giannotti, F., Nanni, M., Pinelli, F., Pedreschi, D.: Trajectory pattern
+  mining. In: Proceedings of KDD. pp. 330--339 (2007)
+
+\bibitem{han2000mining}
+Han, J., Pei, J., Yin, Y.: Mining frequent patterns without candidate
+  generation. ACM SIGMOD Record  \textbf{29}(2),  1--12 (2000)
+
+\bibitem{kulldorff1997spatial}
+Kulldorff, M.: A spatial scan statistic. Communications in Statistics-Theory
+  and Methods  \textbf{26}(6),  1481--1496 (1997)
+
+\bibitem{kulldorff2001prospective}
+Kulldorff, M.: Prospective time periodic geographical disease surveillance
+  using a scan statistic. Journal of the Royal Statistical Society: Series A
+  \textbf{164}(1),  61--72 (2001)
+
+\bibitem{shekhar2001colocation}
+Shekhar, S., Huang, Y.: Discovering spatial co-location patterns: A summary of
+  results. Advances in Spatial and Temporal Databases pp. 236--256 (2001)
+
+\bibitem{shin2018mzoom}
+Shin, K., Hooi, B., Faloutsos, C.: Fast, accurate, and flexible algorithms for
+  dense subtensor mining. ACM Transactions on Knowledge Discovery from Data
+  \textbf{12}(3),  1--30 (2018)
+
+\bibitem{shin2017densealert}
+Shin, K., Hooi, B., Kim, J., Faloutsos, C.: Densealert: Incremental
+  dense-subtensor detection in tensor streams. In: Proceedings of KDD. pp.
+  1057--1066 (2017)
+
+\end{thebibliography}

@@ -1,0 +1,70 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit}
+\usepackage{hyperref}
+\usepackage{luatexja}
+\usepackage[match]{luatexja-fontspec}
+\setmainjfont{Hiragino Mincho ProN}
+\setsansjfont{Hiragino Kaku Gothic ProN}
+
+% llncs は theorem/lemma/definition/remark/example/problem を提供済み
+% 日本語名称に上書き
+\renewcommand{\definitionname}{定義}
+\renewcommand{\lemmaname}{補題}
+\renewcommand{\remarkname}{注意}
+\renewcommand{\problemname}{問題}
+\renewcommand{\examplename}{例}
+
+\begin{document}
+
+\title{3次元 Apriori-Window: 時空間トランザクションデータにおける
+密集アイテムセット領域の厳密抽出}
+
+\author{Anonymous Author(s)}
+\authorrunning{Anonymous et al.}
+\institute{Anonymous Institution \\ \email{anon@example.com}}
+
+\maketitle
+
+\begin{abstract}
+Apriori-Window は時刻付きトランザクションデータに対してスライディングウィンドウ密集区間を
+直接かつ厳密に発見する手法であるが、1次元の時間軸のみを扱うため、
+空間的に局在するパターンを識別できない問題がある。
+本稿では Apriori-Window を
+時間 $\times$ 空間 $(x, y)$ の\textbf{3次元グリッドに拡張}した
+\textbf{3次元 Apriori-Window アルゴリズム}を提案する。
+3つの高速化技術---3次元接頭辞和、$t$ 軸ストライド、Apriori 枝刈り---は
+いずれも前身手法の1次元技術の直接拡張であり、
+計算量をナイーブ実装の $O(M \cdot G \cdot W_t W_x W_y)$ から
+$O(M \cdot G + N \cdot W_x W_y)$ に削減する。
+
+合成データ実験では、
+3次元設定（$W_x{=}W_y{=}3$）が植え付けパターン3件を Precision $= 1.0$ で完全回収する一方、
+1次元相当設定（$W_x{=}W_y{=}50$）は93〜100件の偽陽性パターンを生成した
+（Precision $\approx 0.03$）。
+また $N = 100{,}000$ トランザクションで約 1.4 秒（Rust + Rayon 並列化）を達成した。
+\end{abstract}
+
+\keywords{頻出パターンマイニング \and 時空間データ \and スライディングウィンドウ \and
+密集領域検出 \and Apriori \and 3次元接頭辞和}
+
+\input{../manuscript/sec/01_intro}
+\input{../manuscript/sec/02_related_work}
+\input{../manuscript/sec/03_problem_definition}
+\input{../manuscript/sec/04_proposed_method}
+\input{../manuscript/sec/05_experiments}
+\input{../manuscript/sec/07_conclusion}
+
+\bibliographystyle{splncs04}
+\bibliography{../research/refs}
+
+\end{document}
