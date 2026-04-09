@@ -15,7 +15,7 @@ Han ら~\cite{han2000mining}のFP-Growthは接頭辞木を用いてさらに高�
 これらは静的なトランザクションデータベースを対象とし、
 時間的・空間的なパターン分布の変化は扱わない。
 
-本研究は Apriori の枝刈り原理を3次元密集セル集合に拡張し、
+本研究は Apriori の枝刈り原理を $d$ 次元密集セル集合に拡張し、
 候補セルの交差集合が空の場合に $I_P$ 構築を省略する（\S\ref{sec:alg_k2}）。
 
 \subsection{Apriori-Window（直接の前身研究）}
@@ -29,16 +29,9 @@ Apriori 枝刈りにより $(k{-}1)$-部分集合に密集区間がないパタ�
 比較実験では LPFIM~\cite{han2000mining}、LPPM、Recur を大幅に上回る性能を示した。
 
 本研究はこの手法を1次元（時間軸のみ）から
-3次元（時間 $\times$ 空間 $x \times$ 空間 $y$）に拡張する。
-$W_x = W_y = 1$ とすると本研究の問題設定・アルゴリズムは
+任意の $d$ 次元（時間 + $d{-}1$ 個の空間・カテゴリ次元）に拡張する。
+全空間次元のウィンドウ幅を1とすると本研究の問題設定・アルゴリズムは
 Apriori-Window に帰着する（注意~\ref{rem:1d_reduction}、補題~\ref{lem:stride}）。
-
-\subsection{スライディングウィンドウパターンマイニング}
-
-スライディングウィンドウを用いて時間的に変化するパターンを追跡する研究として、
-Teng ら~\cite{dsaa2025}は変化点ベースのイベント帰属パイプラインを提案している。
-このパイプラインは1次元の時間軸のみを扱い、
-空間的に局在するパターン変動は検出できない。
 
 \subsection{時空間パターンマイニング}
 
@@ -56,7 +49,7 @@ DenseAlert~\cite{shin2017densealert}やM-Zoom~\cite{shin2018mzoom}は
 多次元テンソルにおける密ブロックを検出する。
 これらはテンソル全体のランク分解に基づく異常検出が主目的であり、
 アイテムセットパターンのスライディングウィンドウサポートや
-6近傍連結成分としての密集領域抽出は扱わない。
+$2d$-近傍連結成分としての密集領域抽出は扱わない。
 
 \subsection{空間スキャン統計}
 
@@ -70,8 +63,8 @@ Kulldorff~\cite{kulldorff1997spatial}の空間スキャン統計は
 
 表~\ref{tab:related}に各手法との比較を示す。
 本研究は、Apriori-Window~\cite{aprioriwindow}の $t$ 軸ストライドと Apriori 枝刈りを
-3次元接頭辞和・XY イベントリストと組み合わせることで、
-時空間アイテムセットの密集領域を効率的に発見する唯一のフレームワークである。
+$d$ 次元接頭辞和・空間イベントリストと組み合わせることで、
+多次元トランザクションデータから密集アイテムセット領域を効率的に発見する唯一のフレームワークである。
 
 \begin{table}[t]
 \centering
@@ -90,7 +83,7 @@ Apriori-Window~\cite{aprioriwindow}             & $\checkmark$ & $\times$ (1D) &
 DenseAlert~\cite{shin2017densealert}             & $\times$     & $\checkmark$ & $\times$     \\
 コロケーション~\cite{shekhar2001colocation}      & $\checkmark$ & $\checkmark$ & $\times$     \\
 \midrule
-\textbf{本研究}                                  & $\checkmark$ & $\checkmark$ (3D) & $\checkmark$ \\
+\textbf{本研究}                                  & $\checkmark$ & $\checkmark$ ($d$次元) & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \end{table}

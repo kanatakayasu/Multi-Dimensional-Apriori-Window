@@ -21,7 +21,7 @@ $O\!\left(M \cdot G + N \cdot \prod_{k=1}^{d-1} W_k\right)$ に抑える
 \toprule
 Apriori-Window（1次元）& 本研究（$d$ 次元）\\
 \midrule
-累積サム $O(1)$ 区間クエリ & $d$ 次元接頭辞和 $O(2^d)$ ウィンドウクエリ \\
+二分探索 $O(\log n)$ 区間クエリ & $d$ 次元接頭辞和 $O(2^d)$ ウィンドウクエリ（新規）\\
 $t$ 軸ストライド（$k=1$） & 空間イベントリスト + $t$ 軸ストライド（$k=1$）\\
 候補区間交差による枝刈り & 候補セル集合交差による枝刈り（$k\geq2$）\\
 密集区間（1次元連結成分） & 密集領域（$2d$-近傍連結成分）\\
@@ -59,7 +59,7 @@ $k \geq 2$ ではこれを全グリッド点に適用し、
 
 $k = 1$（単体アイテム）の密集セル検出では、
 Apriori-Window の $t$ 軸ストライド~\cite{aprioriwindow}を
-各空間ウィンドウ $(x_s, y_s)$ に独立に適用する。
+各空間ウィンドウ $(s_1, \ldots, s_{d-1})$ に独立に適用する。
 
 \paragraph{空間イベントリストの構築.}
 トランザクション $(\bm{c}_n, d_n)$（ビン化後: $\bm{b}_n$）がアイテム $i$ を含む場合、
@@ -73,7 +73,7 @@ $b_n^{(0)}$（時間ビン）を追加する。
 $d = 1$（時間のみ）のとき単一リスト $L_i() = \mathrm{occ}(\{i\})$ に帰着する。
 
 \paragraph{$t$ 軸ストライド.}
-各 $(x_s, y_s)$ について、ソート済みリスト $L_i(x_s, y_s)$ に対し
+各 $(s_1, \ldots, s_{d-1})$ について、ソート済みリスト $L_i(s_1, \ldots, s_{d-1})$ に対し
 ウィンドウ左端 $l$ を動かして密集窓の開始点を求める
 （Algorithm~\ref{alg:t_stride}）。
 本アルゴリズムは Apriori-Window の $t$ 軸ストライドと同一の
@@ -82,12 +82,12 @@ $d = 1$（時間のみ）のとき単一リスト $L_i() = \mathrm{occ}(\{i\})$ 
 ウィンドウ $[l, l+W_t)$ 内のカウント $c$ が $\theta$ 未満の場合、
 次のイベントを含む最小の窓開始点へジャンプする：
 \begin{equation}\label{eq:jump_empty}
-  l \leftarrow \max(l+1,\; L_i(x_s,y_s)[\mathrm{next}] - W_t + 1).
+  l \leftarrow \max(l+1,\; L_i(\bm{s}_{\mathrm{sp}})[\mathrm{next}] - W_t + 1).
 \end{equation}
 カウント $c > \theta$ の場合（余剰 $\mathrm{surplus} = c - \theta$ 個）、
 左端から $\mathrm{surplus}$ 番目のイベントの時刻へジャンプする：
 \begin{equation}\label{eq:jump_dense}
-  l \leftarrow L_i(x_s, y_s)[l_{\mathrm{lo}} + \mathrm{surplus}].
+  l \leftarrow L_i(\bm{s}_{\mathrm{sp}})[l_{\mathrm{lo}} + \mathrm{surplus}].
 \end{equation}
 $l_{\mathrm{lo}}$ はリスト中で $l$ 以上の最初のインデックスである。
 
@@ -113,11 +113,11 @@ $d$ 次元版であり、スキップ区間内の密集窓の開始点を
 陽に評価せずとも補填により正確に列挙できることを示す。
 
 \begin{algorithm}[t]
-\caption{$t$ 軸 1 次元ストライドによる密集ウィンドウ開始点列挙}
+\caption{$t$ 軸 1 次元ストライドによる密集窓の開始点列挙}
 \label{alg:t_stride}
 \begin{algorithmic}[1]
 \Require ソート済みイベントリスト $L$、ウィンドウ幅 $W_t$、閾値 $\theta$
-\Ensure 密集ウィンドウ開始点の集合 $\mathcal{S}$
+\Ensure 密集窓の開始点の集合 $\mathcal{S}$
 \State $\mathcal{S} \leftarrow \emptyset$,\quad
        $l \leftarrow L[0] - (W_t - 1)$,\quad
        $\mathit{prev} \leftarrow \mathrm{nil}$
