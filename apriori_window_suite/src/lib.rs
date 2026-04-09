@@ -6,6 +6,7 @@
 pub mod apriori;
 pub mod basket;
 pub mod grid3d;
+pub mod grid_nd;
 pub mod interval;
 pub mod io;
 pub mod md_apriori;
