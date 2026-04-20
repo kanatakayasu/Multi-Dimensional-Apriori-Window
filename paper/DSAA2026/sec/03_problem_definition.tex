@@ -1,0 +1,158 @@
+% ==============================================================
+\section{問題定義}\label{sec:problem}
+% ==============================================================
+
+本節では、Apriori-Window~\cite{aprioriwindow} の1次元設定を復習し（\S\ref{sec:1d_review}）、
+続いてその $d$ 次元拡張を定式化する（\S\ref{sec:nd_extension}）。
+
+% ==============================================================
+\subsection{Apriori-Window（1次元）}\label{sec:1d_review}
+% ==============================================================
+
+$\mathcal{I} = \{i_1, \ldots, i_m\}$ をアイテム全体集合、
+$\mathcal{D}_{\mathrm{1D}} = \{(t_n, d_n)\}_{n=1}^N$ を
+タイムスタンプ付きトランザクション列とする。
+ここで $t_n \in \mathbb{Z}_{\geq 0}$ は整数タイムスタンプ、
+$d_n \subseteq \mathcal{I}$ はアイテム集合である。
+
+パターン $P \subseteq \mathcal{I}$ の出現列を
+\[
+  \mathrm{occ}(P) = \{t_n : P \subseteq d_n\}
+\]
+とする。
+
+\begin{definition}[区間サポート~\cite{aprioriwindow}]\label{def:sup1d}
+ウィンドウ幅 $W$（$W > 0$）のもとで、
+ウィンドウ左端 $l$ に対するパターン $P$ の区間サポートを
+\[
+  \mathrm{sup}(P,\, l,\, W)
+  = \bigl|\{t \in \mathrm{occ}(P) : l \leq t \leq l + W\}\bigr|
+\]
+と定義する。窓 $[l, l+W]$ は $W+1$ 個の離散時刻を含む。
+\end{definition}
+
+\begin{definition}[密集開始点集合と密集区間]\label{def:dense1d}
+サポート閾値 $\theta$ に対し、
+\[
+  \mathcal{T}_\theta(P)
+  = \{l \in \mathbb{Z}_{\geq 0} : \mathrm{sup}(P, l, W) \geq \theta\}
+\]
+を $P$ の\emph{密集開始点集合}とする。
+
+$[a,b] \subseteq \mathcal{T}_\theta(P)$ を最大連続成分とする。
+このとき $[a,\, b + W]$ を $P$ の\emph{密集区間}と呼ぶ。
+\end{definition}
+
+
+% ==============================================================
+\subsection{$d$ 次元への拡張}\label{sec:nd_extension}
+% ==============================================================
+
+$\mathcal{D} = \{(\bm{b}_n, d_n)\}_{n=1}^N$ を
+$d$ 次元トランザクション列とする。ここで
+\[
+  \bm{b}_n = (b_n^{(0)}, b_n^{(1)}, \ldots, b_n^{(d-1)})
+  \in \prod_{k=0}^{d-1}\{0,1,\ldots,N_k-1\}
+\]
+は整数座標ベクトル（第0軸は時間）、
+$d_n \subseteq \mathcal{I}$ はアイテム集合である。
+$N$ は\emph{トランザクション数}を表す。
+
+\begin{definition}[固定空間開始点への時間多重集合還元]\label{def:collapsed_multiset_nd}
+空間開始ベクトル
+\[
+  \bm{s}_{\mathrm{sp}} = (s_1, \ldots, s_{d-1})
+\]
+と空間ウィンドウ幅
+$\bm{W}_{\mathrm{sp}} = (W_1, \ldots, W_{d-1})$
+（各 $W_k > 0$）を固定する。
+軸 $k$ の空間窓 $[s_k, s_k + W_k]$ は $W_k + 1$ 個の離散座標を含む。
+パターン $P$ の時間多重集合を
+\[
+  L_P(\bm{s}_{\mathrm{sp}})
+  =
+  \{\!\{
+    b_n^{(0)}
+    \mid
+    P \subseteq d_n,\;
+    s_k \leq b_n^{(k)} \leq s_k + W_k\; (\forall k=1,\ldots,d-1)
+  \}\!\}
+\]
+と定義する。ここで $\{\!\{\cdot\}\!\}$ は重複を許す多重集合を表す。
+\end{definition}
+
+この定義の本質は、固定空間開始点ごとに
+$d$ 次元問題を\emph{重複タイムスタンプを許す1次元問題}へ還元することにある。
+
+\begin{definition}[$d$ 次元スライディングウィンドウサポート]\label{def:support_nd}
+時間開始点 $s_0$ と空間開始ベクトル $\bm{s}_{\mathrm{sp}}$ に対し、
+パターン $P$ のサポートを
+\begin{equation}\label{eq:support_nd}
+  S_P(s_0, \bm{s}_{\mathrm{sp}})
+  = \bigl|\{t \in L_P(\bm{s}_{\mathrm{sp}}) : s_0 \leq t \leq s_0 + W_0\}\bigr|
+\end{equation}
+と定義する。
+\end{definition}
+
+\begin{definition}[密集開始点集合と密集領域]\label{def:dense_region_nd}
+固定空間開始ベクトル $\bm{s}_{\mathrm{sp}}$ に対し、
+\[
+  \mathcal{T}_\theta(P,\bm{s}_{\mathrm{sp}})
+  =
+  \{s_0 \in \mathbb{Z}_{\geq 0} : S_P(s_0,\bm{s}_{\mathrm{sp}}) \geq \theta\}
+\]
+を空間開始点 $\bm{s}_{\mathrm{sp}}$ における $P$ の\emph{密集開始点集合}とする。
+
+$[a_j,b_j]$ を $\mathcal{T}_\theta(P,\bm{s}_{\mathrm{sp}})$ の最大連続成分とする。
+このとき $[a_j,\, b_j + W_0]$ を空間開始点 $\bm{s}_{\mathrm{sp}}$ における
+$P$ の\emph{密集区間}と呼ぶ
+（定義~\ref{def:dense1d} の自然な拡張）。
+
+全空間開始点にわたる密集区間の集合
+\[
+  \mathcal{R}_\theta(P)
+  = \{(\bm{s}_{\mathrm{sp}},\, [a_j,\, b_j + W_0])\}
+\]
+を $P$ の\emph{密集領域}と呼ぶ。
+\end{definition}
+
+$d=1$ のとき $\bm{s}_{\mathrm{sp}}$ は空ベクトルとなり、
+$W_0 = W$ として定義~\ref{def:dense1d} に一致する。
+
+\paragraph{Apriori 単調性.}
+
+\begin{lemma}[密集開始点集合の単調性]\label{lem:apriori}
+任意のパターン $P$ とその部分集合 $Q \subset P$、
+任意の空間開始ベクトル $\bm{s}_{\mathrm{sp}}$ に対して、
+\[
+  \mathcal{T}_\theta(P,\bm{s}_{\mathrm{sp}})
+  \subseteq
+  \mathcal{T}_\theta(Q,\bm{s}_{\mathrm{sp}})
+\]
+が成立する。
+\end{lemma}
+
+証明は付録~\ref{sec:proofs}に示す。
+
+補題~\ref{lem:apriori} より、パターン $P$ の密集開始点集合は
+各 singleton item $i \in P$ の密集区間に包含される。
+提案手法ではこの性質を用いて、
+\emph{singleton interval map の交差}を候補区間として利用する（\S\ref{sec:alg_k2}）。
+
+\subsection{$d$ 次元密集領域検出問題}\label{sec:dense_detection}
+
+\textbf{入力}：$d$ 次元トランザクション列 $\mathcal{D}$、
+ウィンドウ幅
+$\bm{W} = (W_0, W_1, \ldots, W_{d-1}) \in \mathbb{Z}_{>0}^d$、
+サポート閾値 $\theta$。
+各軸 $k$ の窓は閉区間 $[s_k, s_k + W_k]$（$W_k + 1$ ビン）である。
+
+\textbf{出力}：
+各パターン $P$ に対し、密集領域の完全な集合
+\[
+  \mathcal{R}_\theta(P)
+  = \{(\bm{s}_{\mathrm{sp}}, [a_j,\, b_j + W_0])\}.
+\]
+
+この区間表現により、1次元 Apriori-Window の密集区間計算と
+候補区間交差枝刈りをそのまま $d$ 次元へ持ち込むことができる（\S\ref{sec:method}）。

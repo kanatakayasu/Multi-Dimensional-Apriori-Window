@@ -1,0 +1,204 @@
+% ==============================================================
+\section{補題の証明}
+\label{sec:proofs}
+% ==============================================================
+
+\begin{proof}[Proof of Lemma~\ref{lem:apriori}]
+任意のトランザクション$n$について、$P \subseteq d_n$ならば$Q \subseteq d_n$である。
+したがって、任意の固定空間始点ベクトル$\bm{s}_{\mathrm{sp}}$に対し、
+$L_P(\bm{s}_{\mathrm{sp}})$の各要素は
+$L_Q(\bm{s}_{\mathrm{sp}})$にも含まれる。
+ゆえに、任意の$s_0$について
+$S_P(s_0,\bm{s}_{\mathrm{sp}}) \leq S_Q(s_0,\bm{s}_{\mathrm{sp}})$が成り立つ。
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:stride}]
+現在のウィンドウ$[l, l+W_0]$内の右端$\theta$個のイベントを考える。
+その最左のイベントは$L[l_{\mathrm{lo}} + (c-\theta)] = l_{\mathrm{dense}}$である。
+任意の$l' \leq l_{\mathrm{dense}}$について、
+全$\theta$個のイベントは$\geq l'$であり、
+$l' \geq l$より$l'+W_0 \geq l+W_0$が成り立つ。
+したがって、これらのイベントは現在のウィンドウ$[l,l+W_0]$から外れず、
+$[l', l'+W_0]$にもすべて含まれる。
+ゆえに、$l'$においてもウィンドウ内に少なくとも$\theta$個のイベントが存在する。
+\end{proof}
+
+% ==============================================================
+\section{データセットの詳細}
+\label{sec:dataset_details}
+% ==============================================================
+
+各データセットの概要を以下に示す。
+
+\begin{itemize}
+\item \textbf{Chicago Crime}~\cite{chicagocrime}:
+  シカゴ市が公開する犯罪報告データ。
+  各レコードは日時、緯度、経度、
+  犯罪種別（窃盗、暴行、薬物等33種）を含む。
+\item \textbf{NYPD Crime}~\cite{nypdcrime}:
+  ニューヨーク市警察が公開する犯罪報告データ。
+  各レコードは日時、緯度、経度、
+  犯罪種別（69種）を含む。
+\item \textbf{NYC 311}~\cite{nyc311}:
+  ニューヨーク市の市民苦情（311）データ。
+  各レコードは通報日時、緯度、経度、
+  苦情種別（騒音、違法駐車、漏水等232種）を含む。
+\item \textbf{USGS Earthquake}~\cite{usgseq}:
+  米国地質調査所（USGS）が公開する地震カタログ。
+  各レコードは日時、緯度、経度、深さ、マグニチュードを含む。
+  マグニチュードを5段階
+  （M2.5--3.0, 3.0--4.0, 4.0--5.0, 5.0--6.0, 6.0+）に離散化し
+  アイテムとして使用した。
+  本データセットのみ4次元
+  （時間＋緯度＋経度＋深さ）である。
+\end{itemize}
+
+基本統計量をTable~\ref{tab:datasets}に示す。
+
+\begin{table}[h]
+\centering
+\caption{実験データセット。
+\#Events: 有効イベント数、
+\#Items: アイテム種類数、
+avg$\ell$: セルあたり平均アイテム数、
+$d$: 次元数。}
+\label{tab:datasets}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & \#Events & \#Items & avg$\ell$ & $d$ \\
+\midrule
+Chicago Crime~\cite{chicagocrime}       & 1,168,412 &  33 & 7.59 & 3 \\
+NYPD Crime~\cite{nypdcrime}             & 2,317,293 &  69 & 5.67 & 3 \\
+NYC 311~\cite{nyc311}                   & 9,132,214 & 232 & 18.14 & 3 \\
+USGS Earthquake~\cite{usgseq}          &    30,224 &   5 & 1.17 & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+各データセットのグリッド構成の詳細は以下の通りである。
+Chicago Crimeは
+週$\times$緯度ビン（$0.02^\circ$）$\times$経度ビン（$0.02^\circ$）のグリッド：
+$261 \times 20 \times 21$（47,217セル）を使用した。
+NYPD Crime：$261 \times 43 \times 58$（189,481セル）。
+NYC 311：$157 \times 43 \times 58$（135,490セル）。
+USGS Earthquakeは
+週$\times$緯度ビン（$0.5^\circ$）$\times$経度ビン（$0.5^\circ$）$\times$
+深さビン（35\,km）のグリッド：
+$1{,}096 \times 20 \times 20 \times 20$（13,151セル）を使用した。
+USGS Earthquakeのアイテムはマグニチュード帯
+（M2.5--3.0, 3.0--4.0, 4.0--5.0, 5.0--6.0, 6.0+）の5種類である。
+
+% ==============================================================
+\section{EX-1 比較手法のグリッドサーチパラメータ}
+\label{sec:grid_search_params_r1}
+% ==============================================================
+
+EX-1-1ではF1を最大化する設定を、
+EX-1-2では平均Jaccardを最大化する設定を採用した。
+ColocationおよびSTCP-MinerはEX-1-1（パターン検出）のみに参加し、
+MZoom、LISA、ST-DBSCANはEX-1-2（領域復元）のみに参加し、
+GTパターンを入力として与えた。
+
+\begin{table}[h]
+\centering
+\caption{EX-1比較手法のグリッドサーチパラメータ範囲。}
+\label{tab:params_exr1_appendix}
+\small
+\begin{tabular}{lp{0.62\columnwidth}}
+\toprule
+手法 & グリッドサーチ対象 \\
+\midrule
+Colocation   & \begin{tabular}[t]{@{}l@{}}
+                 PI閾値 $\tau \in \{0.1, 0.2, \ldots, 0.9\}$
+               \end{tabular} \\
+STCP-Miner   & \begin{tabular}[t]{@{}l@{}}
+                 PI閾値 $\tau \in \{0.1, 0.2, \ldots, 0.9\}$ \\
+                 ウィンドウ幅 $W_t \in \{4, 8, 13, 26, 54\}$
+               \end{tabular} \\
+MZoom  & \begin{tabular}[t]{@{}l@{}}
+                 密度尺度 $\in \{\mathrm{geo}, \mathrm{ari}, \mathrm{susp}\}$ \\
+                 Topブロック数 $k \in \{1, 2, \ldots, 100\}$
+               \end{tabular} \\
+LISA         & \begin{tabular}[t]{@{}l@{}}
+                 $k$近傍数 $k \in \{3, 5\}$ \\
+                 有意水準 $\alpha = 0.05$
+               \end{tabular} \\
+ST-DBSCAN    & \begin{tabular}[t]{@{}l@{}}
+                 空間距離 $\varepsilon_1 \in \{1, 2, 3\}$ \\
+                 時間距離 $\varepsilon_2 \in \{1, 2, 4, 8\}$ \\
+                 最小点数 min\_pts $\in \{2, 3, 5\}$
+               \end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:best_params_f1}に各データセットで
+最良スコアを達成したパラメータ設定を示す。
+
+\begin{table}[h]
+\centering
+\caption{EX-1：データセットごとの採用パラメータ設定（グリッドサーチ結果）。}
+\label{tab:best_params_f1}
+\small
+\begin{tabular}{llr}
+\toprule
+データセット & 手法 & 採用パラメータ \\
+\midrule
+\multirow{5}{*}{Chicago}
+  & Colocation  & $\tau{=}0.4$ \\
+  & STCP-Miner  & $\tau{=}0.5,\; W_t{=}4$ \\
+  & MZoom      & susp, $k{=}1$ \\
+  & LISA       & $k{=}3$ \\
+  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}8,\;\mathrm{minPts}{=}5$ \\
+\midrule
+\multirow{5}{*}{NYPD}
+  & Colocation  & $\tau{=}0.3$ \\
+  & STCP-Miner  & $\tau{=}0.3,\; W_t{=}54$ \\
+  & MZoom      & susp, $k{=}1$ \\
+  & LISA       & $k{=}3$ \\
+  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}4,\;\mathrm{minPts}{=}3$ \\
+\midrule
+\multirow{5}{*}{NYC 311}
+  & Colocation  & $\tau{=}0.4$ \\
+  & STCP-Miner  & $\tau{=}0.4,\; W_t{=}54$ \\
+  & MZoom      & susp, $k{=}1$ \\
+  & LISA       & $k{=}3$ \\
+  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}1,\;\mathrm{minPts}{=}3$ \\
+\midrule
+\multirow{5}{*}{USGS EQ}
+  & Colocation  & $\tau{=}0.1$ \\
+  & STCP-Miner  & $\tau{=}0.1,\; W_t{=}4$ \\
+  & MZoom      & ari, $k{=}100$ \\
+  & LISA       & $k{=}5$ \\
+  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}8,\;\mathrm{minPts}{=}2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================
+\section{EX-2 合成データ生成の詳細}
+\label{sec:ex2_data_details}
+% ==============================================================
+
+EX-2では、$d = 2$のグリッド
+$\{0,\ldots,T{-}1\} \times \{0,\ldots,s{-}1\}$の
+\textbf{全}格子点に1トランザクションを配置して合成データを生成する。
+各トランザクションについて、
+語彙サイズ$|\mathcal{I}| = 20$、
+背景出現確率$p_{\mathrm{item}} = 0.10$のもと、
+各アイテムを独立にBernoulli$(p_{\mathrm{item}})$からサンプリングする。
+全アイテムが不在のセルにはデフォルトでアイテム1を割り当て、
+各セルに正確に1トランザクションが存在することを保証する。
+これによりトランザクション数は正確に$N = T \times s$となる。
+
+埋め込みパターンは注入しない。
+密集パターンはBernoulli背景の統計的揺らぎから自然に生じる。
+予備的な校正により、
+全構成で閾値$\theta = 15$において
+十分な数のパターンが検出されることを確認した。
+
+\S\ref{sec:ex2}で述べた通り、
+$d$次元グリッドにおける$d$の増加に伴う$N = T \times s^{d-1}$の成長は
+$N$スケーラビリティに吸収されるため、
+次元数に関する別途のスケーラビリティ実験は不要である。

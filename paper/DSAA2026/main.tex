@@ -1,0 +1,128 @@
+% ==============================================================
+% 多次元 Apriori-Window: 多次元トランザクションデータにおける密集アイテムセット領域の厳密抽出
+% ==============================================================
+% コンパイル:
+%   xelatex main.tex && bibtex main && xelatex main.tex && xelatex main.tex
+% ==============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% --- 日本語対応 ---
+\usepackage{xeCJK}
+\setCJKmainfont[AutoFakeBold=2.5]{Hiragino Mincho ProN}
+\setCJKsansfont{Hiragino Sans}
+\setCJKmonofont{Hiragino Sans}
+
+% --- 標準パッケージ ---
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{threeparttable}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{bm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit}
+
+% --- 定理環境 ---
+\newtheorem{definition}{定義}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{補題}
+\newtheorem{remark}{注意}
+\newtheorem{problem}{問題}
+\newtheorem{example}{例}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Multi-Dimensional Apriori-Window: \\
+Exact Mining of Dense Itemset Regions\\
+over Arbitrary Dimensions}
+
+\author{
+  \IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+  \IEEEauthorblockA{
+    \textit{Dept. Name of Organization}\\
+    \textit{Name of Organization}\\
+    City, Country\\
+    email@example.com}
+  \and
+  \IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+  \IEEEauthorblockA{
+    \textit{Dept. Name of Organization}\\
+    \textit{Name of Organization}\\
+    City, Country\\
+    email@example.com}
+}
+
+\maketitle
+\pagestyle{plain}
+\pagenumbering{arabic}
+
+\begin{abstract}
+大規模小売・疫学・物流データでは、
+\emph{何が}密集しているか（アイテムセット）と
+\emph{いつ・どこで}密集しているか（時空間領域）を
+同時に答えることが求められるが、
+既存手法はこの両方を達成できない：
+パターンマイニング系手法は領域を出力せず、
+領域抽出系手法（M-Zoom 等）は
+直積ブロック制約や反単調性の欠如により
+アイテムセット列挙と統合できない。
+本稿では Apriori-Window を任意の $d$ 次元グリッドに拡張した
+\textbf{多次元 Apriori-Window}を提案する。
+固定空間開始点ごとに多次元問題を
+重複時刻を許す1次元問題へ還元し、
+窓内出現数の反単調性を活用した Apriori 枝刈りにより
+全密集パターンとその任意形状の密集領域を厳密に列挙する。
+
+4 つの実データ（犯罪・通報・地震，$d{=}3$--$4$）での比較実験では，
+パターンマイニング系手法（Colocation / STCP-Miner）は
+パターン検出 F1 = 0.25--0.71 に留まった。
+領域抽出系手法（MZoom・LISA・ST-DBSCAN）は
+oracle パターンを与えても mean Jaccard $\leq$ 0.104 に留まり，
+提案手法の密集領域を精度良く復元できなかった。
+スケーラビリティ実験では，
+$N = T \times s$ を $10^3$--$10^8$ の 5 桁にわたって変化させ，
+トランザクション数に対する線形スケーリングを確認した
+（$10^8$ トランザクションを 10 分以内に処理）。
+\end{abstract}
+
+\begin{IEEEkeywords}
+頻出パターンマイニング, 多次元データ, スライディングウィンドウ,
+密集領域検出, Apriori, 区間表現
+\end{IEEEkeywords}
+
+\input{sec/01_intro}
+\input{sec/02_related_work}
+\input{sec/03_problem_definition}
+\input{sec/04_proposed_method}
+\input{sec/05_experiments}
+\input{sec/07_conclusion}
+
+% --- 謝辞 ---
+\section*{Acknowledgment}
+The authors acknowledge that portions of the text in
+this paper were generated with Anthropic's large language
+model Claude~\cite{claude2025}.
+
+% --- 参考文献 ---
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{../research/refs}
+
+% --- 付録 ---
+\clearpage
+\appendices
+\input{sec/07_appendix}
+
+\end{document}
