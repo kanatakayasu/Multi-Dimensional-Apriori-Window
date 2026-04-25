@@ -116,9 +116,6 @@ $P$ の\emph{密集区間}と呼ぶ
 を $P$ の\emph{密集領域}と呼ぶ。
 \end{definition}
 
-$d=1$ のとき $\bm{s}_{\mathrm{sp}}$ は空ベクトルとなり、
-$W_0 = W$ として定義~\ref{def:dense1d} に一致する。
-
 \paragraph{Apriori 単調性.}
 
 \begin{lemma}[密集開始点集合の単調性]\label{lem:apriori}
@@ -141,18 +138,13 @@ $W_0 = W$ として定義~\ref{def:dense1d} に一致する。
 
 \subsection{$d$ 次元密集領域検出問題}\label{sec:dense_detection}
 
-\textbf{入力}：$d$ 次元トランザクション列 $\mathcal{D}$、
+$d$ 次元密集領域検出問題とは、
+$d$ 次元トランザクション列 $\mathcal{D}$、
 ウィンドウ幅
 $\bm{W} = (W_0, W_1, \ldots, W_{d-1}) \in \mathbb{Z}_{>0}^d$、
-サポート閾値 $\theta$。
+サポート閾値 $\theta$ が与えられたとき、
+各パターン $P$ に対する密集領域の完全な集合
+$\mathcal{R}_\theta(P)
+= \{(\bm{s}_{\mathrm{sp}}, [a_j,\, b_j + W_0])\}$
+を求める問題である。
 各軸 $k$ の窓は閉区間 $[s_k, s_k + W_k]$（$W_k + 1$ ビン）である。
-
-\textbf{出力}：
-各パターン $P$ に対し、密集領域の完全な集合
-\[
-  \mathcal{R}_\theta(P)
-  = \{(\bm{s}_{\mathrm{sp}}, [a_j,\, b_j + W_0])\}.
-\]
-
-この区間表現により、1次元 Apriori-Window の密集区間計算と
-候補区間交差枝刈りをそのまま $d$ 次元へ持ち込むことができる（\S\ref{sec:method}）。

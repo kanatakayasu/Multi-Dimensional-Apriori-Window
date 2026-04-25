@@ -1,0 +1,219 @@
+% ==============================================================
+\section{Related Work}\label{sec:related}
+% ==============================================================
+
+This work addresses the problem of discovering
+dense itemset regions from spatio-temporal transaction data.
+This problem lies at the intersection of two research lineages:
+(1)~the \emph{pattern mining lineage} aimed at enumerating itemsets, and
+(2)~the \emph{dense block detection lineage} aimed at detecting
+dense blocks in multi-dimensional spaces.
+Below we organize both lineages and clarify
+why this work is positioned at their intersection.
+
+% ==============================================================
+\subsection{Pattern Mining Lineage}
+% ==============================================================
+
+\paragraph{Frequent Itemset Mining (FIM).}
+The Apriori algorithm by Agrawal et al.~\cite{agrawal1994apriori}
+exploits the monotonicity of itemsets
+(subsets always have support no less than their supersets)
+to drastically prune the candidate space.
+FP-Growth by Han et al.~\cite{han2000mining}
+further accelerates mining using prefix trees.
+These methods use global support over the entire
+static transaction database as their criterion,
+and thus suffer from the fundamental problem
+of missing locally dense patterns~\cite{aprioriwindow}.
+
+\paragraph{Local dense interval detection methods.}
+Several methods based on \emph{intervals} between consecutive
+occurrence timestamps have been proposed
+for detecting locally dense intervals.
+LPFIM~\cite{mahanta2005lpfim} splits intervals
+when the gap between two consecutive occurrences exceeds
+a threshold minthd1, and outputs intervals
+whose local support rate exceeds a threshold
+and whose length exceeds minthd2.
+LPPM~\cite{fournierviger2021lppm} introduces
+spillover accumulation for noise-robust interval detection.
+
+These methods estimate density by evaluating
+``the time difference between two consecutive occurrences
+(inter-occurrence interval).''
+However, as Takahashi et al.~\cite{aprioriwindow} pointed out,
+since the gap parameter governs both pattern identification accuracy
+and interval detection accuracy,
+parameter settings that simultaneously keep both high
+generally do not exist---a structural limitation.
+Moreover, these methods are \emph{inherently non-extensible to
+multiple dimensions}.
+Occurrence points on a $d$-dimensional grid
+have no linear ordering,
+making ``the interval between two consecutive occurrences''
+ill-defined.
+
+Apriori-Window~\cite{aprioriwindow} is an exact method
+that resolves this structural limitation.
+By \emph{directly} computing the number of occurrences
+within a sliding window $[l, l+W]$
+rather than via inter-occurrence intervals,
+it evaluates local frequency without requiring a gap parameter.
+Combined with anti-monotonicity-based Apriori pruning
+and $t$-axis stride, it exhaustively and exactly
+enumerates dense intervals.
+Comparative experiments demonstrated performance
+significantly exceeding LPFIM and LPPM~\cite{aprioriwindow}.
+
+\emph{Why multi-dimensionalization is possible}:
+The definition ``number of occurrences within a rectangular window''
+naturally extends to $d$ dimensions
+(simply replacing the window with a $d$-dimensional hyperrectangle
+$\prod_k [s_k, s_k+W_k]$).
+In contrast to interval-based methods
+that depend on linear ordering,
+the design of Apriori-Window does not require linear ordering.
+This work builds on this observation to extend
+Apriori-Window from one dimension to arbitrary $d$ dimensions.
+
+\paragraph{Colocation mining.}
+Colocation mining~\cite{shekhar2001colocation}
+evaluates patterns where multiple feature types
+co-exist in geographic proximity
+using the Participation Index (PI).
+Qian et al.~\cite{qian2009stcolocation} extended this
+to weighted sliding windows (STCP-Miner).
+These methods deal with spatial proximity-based co-occurrence
+rather than transaction-based co-occurrence,
+and do not target dense region extraction.
+However, comparison in terms of
+pattern identification accuracy (F1)
+is possible (\S\ref{sec:ex1_1}).
+
+% ==============================================================
+\subsection{Region Extraction Lineage}
+% ==============================================================
+
+% --- Dense block detection ---
+\paragraph{Dense block detection methods.}
+Dense block detection methods
+including M-Zoom~\cite{shin2018mzoom}
+and others (tensor:~\cite{jiang2015crossspot,shin2018mbiz,shin2017dcube,shin2017densealert,shin2023catchcore};
+graph: SpecGreedy~\cite{feng2020specgreedy})
+detect dense blocks in multi-dimensional data.
+They select value sets $B_k \subseteq D_k$ along each dimension
+and perform greedy search to maximize
+the mass-to-volume ratio of the Cartesian-product block
+$\prod_k B_k$.
+
+These methods have two structural limitations.
+
+\emph{First, output is restricted to Cartesian-product blocks.}
+For irregularly-shaped dense regions,
+they inevitably include excessive areas
+or miss dense cells,
+resulting in low Jaccard even when GT patterns are provided
+(demonstrated in \S\ref{sec:ex1_1}).
+
+\emph{Second, pattern enumeration is inaccurate.}
+While adding items as an additional dimension
+allows enumeration to be attempted,
+the Cartesian-product constraint causes all subsets
+of the itemset $C_B$ within a block
+to be assumed dense in the same region,
+generating false positives (demonstrated in \S\ref{sec:ex1_1}).
+
+% --- Spatial statistics ---
+\paragraph{Spatial statistics.}
+LISA~\cite{anselin1995lisa} identifies spatial hotspots
+using local Moran's $I$, and
+Getis-Ord $G_i^*$~\cite{ord1995getis} evaluates
+local concentration via $z$-scores.
+Both target \emph{spatial dimensions only};
+running them per time slice
+loses temporal continuity.
+
+% --- Spatial/spatio-temporal scan statistics ---
+\paragraph{Spatial and spatio-temporal scan statistics.}
+Kulldorff's~\cite{kulldorff1997spatial,kulldorff2001prospective}
+spatial/spatio-temporal scan statistics detect
+significant clusters using circular/cylindrical scanning windows.
+FlexScan~\cite{tango2005flexscan} extends this
+to irregularly-shaped windows.
+
+All of the above statistical methods are designed
+to detect per-variable anomalous concentrations
+and lack the ability to enumerate co-occurrence patterns (itemsets)
+within transactions.
+Enumerating all patterns would require
+$O(2^{|\mathcal{I}|})$ independent runs,
+and integration with Apriori pruning is not part of their design.
+
+% --- Spatio-temporal clustering ---
+\paragraph{Spatio-temporal density-based clustering (ST-DBSCAN, etc.).}
+ST-DBSCAN~\cite{birant2007stdbscan} extends
+DBSCAN~\cite{ester1996dbscan} to spatio-temporal data
+with independent thresholds $\varepsilon_1, \varepsilon_2$
+for spatial and temporal distances.
+While it outputs arbitrarily-shaped clusters,
+first, it defines density by point-neighborhood counts;
+when occurrences are spatially uniform,
+the entire dataset becomes a single cluster,
+failing to identify localized concentrations.
+Second, point-neighborhood density lacks anti-monotonicity,
+making independent processing of all patterns
+$O(2^{|\mathcal{I}|})$ unavoidable.
+
+All region extraction methods above lack the concept of itemsets,
+but can be evaluated as region extractors
+when GT patterns and their occurrence densities are provided
+(\S\ref{sec:ex1_1}).
+
+% ==============================================================
+\subsection{Positioning of This Work}
+% ==============================================================
+
+The above analysis shows that no existing method
+simultaneously achieves pattern enumeration
+and multi-dimensional dense region extraction.
+This work exploits the anti-monotonicity
+of windowed-occurrence-based density
+to naturally integrate Apriori pruning,
+realizing both within a single framework.
+Table~\ref{tab:related} illustrates this positioning.
+
+\begin{table}[t]
+\centering
+\caption{Comparison with related methods.
+``Itemset'' refers to pattern enumeration capability;
+``Dense region'' refers to the ability to output
+spatio-temporally localized dense regions.}
+\label{tab:related}
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & \shortstack{Item-\\set} & \shortstack{ST dense\\region} & \shortstack{Region\\shape} \\
+\midrule
+Apriori~\cite{agrawal1994apriori}
+                                          & $\checkmark$ & $\times$     & ---          \\
+LPFIM~\cite{mahanta2005lpfim} et al.
+                                          & $\checkmark$ & 1D only      & Interval     \\
+Apriori-Window~\cite{aprioriwindow}       & $\checkmark$ & 1D only      & Interval     \\
+Colocation~\cite{shekhar2001colocation}
+                                          & $\checkmark$ & $\times$     & ---          \\
+STCP-Miner~\cite{qian2009stcolocation}   & $\checkmark$ & $\times$     & ---          \\
+\midrule
+M-Zoom~\cite{shin2018mzoom} et al.       & $\triangle$$^*$     & $\checkmark$ & Cartesian only \\
+SaTScan~\cite{kulldorff1997spatial}       & $\times$     & $\checkmark$ & Circle/cylinder \\
+FlexScan~\cite{tango2005flexscan}        & $\times$     & $\checkmark$ & Irregular    \\
+LISA~\cite{anselin1995lisa}
+  / $G_i^*$~\cite{ord1995getis}          & $\times$     & Spatial only & Arbitrary    \\
+ST-DBSCAN~\cite{birant2007stdbscan} et al. & $\times$   & $\checkmark$ & Arbitrary    \\
+\midrule
+\textbf{Ours}                              & $\checkmark$ & $\checkmark$ & Arbitrary    \\
+\bottomrule
+\multicolumn{4}{l}{\scriptsize $^*$Patterns can be output by including items as a dimension,} \\
+\multicolumn{4}{l}{\scriptsize \hspace{1em}but Cartesian constraints cause false positives and preclude region separation.}
+\end{tabular}
+\end{table}

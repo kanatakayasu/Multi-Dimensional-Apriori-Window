@@ -1,0 +1,66 @@
+{
+  "usgs_eq": {
+    "dataset": "usgs_eq",
+    "n_gt_patterns": 18,
+    "stdbscan": {
+      "eps1": 2,
+      "eps2": 8,
+      "min_pts": 3,
+      "mean_jaccard": 0.0199,
+      "elapsed_s": 2.2
+    },
+    "lisa": {
+      "k": 3,
+      "mean_jaccard": 0.0311,
+      "elapsed_s": 3.5
+    }
+  },
+  "chicago": {
+    "dataset": "chicago",
+    "n_gt_patterns": 2835,
+    "stdbscan": {
+      "eps1": 3,
+      "eps2": 8,
+      "min_pts": 5,
+      "mean_jaccard": 0.0818,
+      "elapsed_s": 481.8
+    },
+    "lisa": {
+      "k": 5,
+      "mean_jaccard": 0.1129,
+      "elapsed_s": 103.5
+    }
+  },
+  "nypd": {
+    "dataset": "nypd",
+    "n_gt_patterns": 4478,
+    "stdbscan": {
+      "eps1": 3,
+      "eps2": 8,
+      "min_pts": 3,
+      "mean_jaccard": 0.0422,
+      "elapsed_s": 892.2
+    },
+    "lisa": {
+      "k": 5,
+      "mean_jaccard": 0.0767,
+      "elapsed_s": 908.7
+    }
+  },
+  "nyc_311": {
+    "dataset": "nyc_311",
+    "n_gt_patterns": 5130,
+    "stdbscan": {
+      "eps1": 2,
+      "eps2": 8,
+      "min_pts": 5,
+      "mean_jaccard": 0.0049,
+      "elapsed_s": 1325.4
+    },
+    "lisa": {
+      "k": 3,
+      "mean_jaccard": 0.0026,
+      "elapsed_s": 1337.6
+    }
+  }
+}

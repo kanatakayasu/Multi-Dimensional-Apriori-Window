@@ -1,0 +1,114 @@
+{
+  "chicago": {
+    "gt_n_patterns": 112,
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 0.772,
+      "best": {
+        "tau": 0.4,
+        "n_pred": 175,
+        "n_tp": 99,
+        "precision": 0.5657,
+        "recall": 0.8839,
+        "f1": 0.6899
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 5.772,
+      "best": {
+        "tau": 0.5,
+        "window_t": 4,
+        "n_pred": 193,
+        "n_tp": 105,
+        "precision": 0.544,
+        "recall": 0.9375,
+        "f1": 0.6885
+      }
+    }
+  },
+  "nypd": {
+    "gt_n_patterns": 63,
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 2.534,
+      "best": {
+        "tau": 0.3,
+        "n_pred": 143,
+        "n_tp": 53,
+        "precision": 0.3706,
+        "recall": 0.8413,
+        "f1": 0.5146
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 17.772,
+      "best": {
+        "tau": 0.3,
+        "window_t": 54,
+        "n_pred": 162,
+        "n_tp": 57,
+        "precision": 0.3519,
+        "recall": 0.9048,
+        "f1": 0.5067
+      }
+    }
+  },
+  "nyc_311": {
+    "gt_n_patterns": 282,
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 74.51,
+      "best": {
+        "tau": 0.4,
+        "n_pred": 590,
+        "n_tp": 112,
+        "precision": 0.1898,
+        "recall": 0.3972,
+        "f1": 0.2569
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 461.117,
+      "best": {
+        "tau": 0.4,
+        "window_t": 54,
+        "n_pred": 815,
+        "n_tp": 136,
+        "precision": 0.1669,
+        "recall": 0.4823,
+        "f1": 0.2479
+      }
+    }
+  },
+  "usgs_eq": {
+    "gt_n_patterns": 14,
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 0.012,
+      "best": {
+        "tau": 0.1,
+        "n_pred": 6,
+        "n_tp": 5,
+        "precision": 0.8333,
+        "recall": 0.3571,
+        "f1": 0.5
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 0.368,
+      "best": {
+        "tau": 0.1,
+        "window_t": 4,
+        "n_pred": 14,
+        "n_tp": 10,
+        "precision": 0.7143,
+        "recall": 0.7143,
+        "f1": 0.7143
+      }
+    }
+  }
+}

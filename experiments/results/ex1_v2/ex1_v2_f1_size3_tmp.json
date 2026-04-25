@@ -1,0 +1,479 @@
+{
+  "chicago": {
+    "dataset": "chicago",
+    "settings": {
+      "window": "4,3,3",
+      "threshold": 3,
+      "n_dims": 3,
+      "max_pattern_size": 3
+    },
+    "gt_n_patterns": 2835,
+    "gt_elapsed_s": 9.7923,
+    "dim_sizes": [
+      261,
+      20,
+      21
+    ],
+    "gt_size_hist": {
+      "1": 29,
+      "2": 353,
+      "3": 2453
+    },
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 0.787,
+      "best": {
+        "tau": 0.1,
+        "n_pred": 492,
+        "n_tp": 492,
+        "precision": 1.0,
+        "recall": 0.1735,
+        "f1": 0.2958
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 4.901,
+      "best": {
+        "tau": 0.1,
+        "window_t": 4,
+        "n_pred": 997,
+        "n_tp": 977,
+        "precision": 0.9799,
+        "recall": 0.3446,
+        "f1": 0.5099
+      }
+    },
+    "mzoom": {
+      "method": "M-Zoom",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 8215.4495,
+        "n_pred": 6013,
+        "n_tp": 2835,
+        "precision": 0.4715,
+        "recall": 1.0,
+        "f1": 0.6408,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 27.022
+      }
+    },
+    "mbiz": {
+      "method": "M-Biz",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 8215.4495,
+        "n_pred": 6013,
+        "n_tp": 2835,
+        "precision": 0.4715,
+        "recall": 1.0,
+        "f1": 0.6408,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 27.995
+      }
+    },
+    "dcube": {
+      "method": "D-Cube",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 8154.3638,
+        "n_pred": 6574,
+        "n_tp": 2835,
+        "precision": 0.4312,
+        "recall": 1.0,
+        "f1": 0.6026,
+        "config": {
+          "density_measure": "geo",
+          "policy": "density",
+          "mass_threshold": 1.0
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 25.0
+      }
+    },
+    "catchcore": {
+      "method": "CatchCore",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 8771.4459,
+        "n_pred": 3683,
+        "n_tp": 2807,
+        "precision": 0.7622,
+        "recall": 0.9901,
+        "f1": 0.8613,
+        "config": {
+          "hs": 3,
+          "p": 0.001,
+          "cons": 20.0,
+          "etas": 10.0
+        },
+        "n_blocks_collected": 2,
+        "collect_s": 5.706
+      }
+    }
+  },
+  "nypd": {
+    "dataset": "nypd",
+    "settings": {
+      "window": "4,3,3",
+      "threshold": 5,
+      "n_dims": 3,
+      "max_pattern_size": 3
+    },
+    "gt_n_patterns": 4478,
+    "gt_elapsed_s": 39.3758,
+    "dim_sizes": [
+      261,
+      43,
+      57
+    ],
+    "gt_size_hist": {
+      "1": 42,
+      "2": 559,
+      "3": 3877
+    },
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 2.651,
+      "best": {
+        "tau": 0.1,
+        "n_pred": 562,
+        "n_tp": 562,
+        "precision": 1.0,
+        "recall": 0.1255,
+        "f1": 0.223
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 15.358,
+      "best": {
+        "tau": 0.1,
+        "window_t": 4,
+        "n_pred": 936,
+        "n_tp": 908,
+        "precision": 0.9701,
+        "recall": 0.2028,
+        "f1": 0.3354
+      }
+    },
+    "mzoom": {
+      "method": "M-Zoom",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 15297.1077,
+        "n_pred": 5326,
+        "n_tp": 3411,
+        "precision": 0.6404,
+        "recall": 0.7617,
+        "f1": 0.6958,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 70.47
+      }
+    },
+    "mbiz": {
+      "method": "M-Biz",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 15297.1077,
+        "n_pred": 5326,
+        "n_tp": 3411,
+        "precision": 0.6404,
+        "recall": 0.7617,
+        "f1": 0.6958,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 72.635
+      }
+    },
+    "dcube": {
+      "method": "D-Cube",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 14987.4931,
+        "n_pred": 2671,
+        "n_tp": 2320,
+        "precision": 0.8686,
+        "recall": 0.5181,
+        "f1": 0.649,
+        "config": {
+          "density_measure": "geo",
+          "policy": "density",
+          "mass_threshold": 1.0
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 72.397
+      }
+    },
+    "catchcore": {
+      "method": "CatchCore",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 15818.1986,
+        "n_pred": 8478,
+        "n_tp": 4161,
+        "precision": 0.4908,
+        "recall": 0.9292,
+        "f1": 0.6423,
+        "config": {
+          "hs": 3,
+          "p": 0.001,
+          "cons": 20.0,
+          "etas": 10.0
+        },
+        "n_blocks_collected": 2,
+        "collect_s": 17.689
+      }
+    }
+  },
+  "nyc_311": {
+    "dataset": "nyc_311",
+    "settings": {
+      "window": "4,3,3",
+      "threshold": 20,
+      "n_dims": 3,
+      "max_pattern_size": 3
+    },
+    "gt_n_patterns": 45358,
+    "gt_elapsed_s": 457.9169,
+    "dim_sizes": [
+      261,
+      43,
+      57
+    ],
+    "gt_size_hist": {
+      "1": 107,
+      "2": 3065,
+      "3": 42186
+    },
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 63.08,
+      "best": {
+        "tau": 0.1,
+        "n_pred": 14966,
+        "n_tp": 14200,
+        "precision": 0.9488,
+        "recall": 0.3131,
+        "f1": 0.4708
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 378.547,
+      "best": {
+        "tau": 0.1,
+        "window_t": 4,
+        "n_pred": 44820,
+        "n_tp": 33505,
+        "precision": 0.7475,
+        "recall": 0.7387,
+        "f1": 0.7431
+      }
+    },
+    "mzoom": {
+      "method": "M-Zoom",
+      "best": {
+        "n_blocks": 1,
+        "min_density": 34218.3674,
+        "n_pred": 79186,
+        "n_tp": 32021,
+        "precision": 0.4044,
+        "recall": 0.706,
+        "f1": 0.5142,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 162.079
+      }
+    },
+    "mbiz": {
+      "method": "M-Biz",
+      "best": {
+        "n_blocks": 1,
+        "min_density": 34218.3674,
+        "n_pred": 79186,
+        "n_tp": 32021,
+        "precision": 0.4044,
+        "recall": 0.706,
+        "f1": 0.5142,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 168.227
+      }
+    },
+    "dcube": {
+      "method": "D-Cube",
+      "best": {
+        "n_blocks": 1,
+        "min_density": 32144.5105,
+        "n_pred": 36097,
+        "n_tp": 23887,
+        "precision": 0.6617,
+        "recall": 0.5266,
+        "f1": 0.5865,
+        "config": {
+          "density_measure": "geo",
+          "policy": "density",
+          "mass_threshold": 1.0
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 158.637
+      }
+    },
+    "catchcore": {
+      "method": "CatchCore",
+      "best": {
+        "n_blocks": 1,
+        "min_density": 33988.1027,
+        "n_pred": 36097,
+        "n_tp": 24249,
+        "precision": 0.6718,
+        "recall": 0.5346,
+        "f1": 0.5954,
+        "config": {
+          "hs": 3,
+          "p": 0.001,
+          "cons": 20.0,
+          "etas": 10.0
+        },
+        "n_blocks_collected": 2,
+        "collect_s": 38.142
+      }
+    }
+  },
+  "usgs_eq": {
+    "dataset": "usgs_eq",
+    "settings": {
+      "window": "13,2,2,2",
+      "threshold": 2,
+      "n_dims": 4,
+      "max_pattern_size": 3
+    },
+    "gt_n_patterns": 18,
+    "gt_elapsed_s": 0.1174,
+    "dim_sizes": [
+      1096,
+      20,
+      20,
+      4
+    ],
+    "gt_size_hist": {
+      "1": 5,
+      "2": 8,
+      "3": 5
+    },
+    "colocation": {
+      "method": "Colocation",
+      "elapsed_s": 0.003,
+      "best": {
+        "tau": 0.1,
+        "n_pred": 6,
+        "n_tp": 6,
+        "precision": 1.0,
+        "recall": 0.3333,
+        "f1": 0.5
+      }
+    },
+    "stcp_miner": {
+      "method": "STCP-Miner",
+      "elapsed_s": 0.384,
+      "best": {
+        "tau": 0.1,
+        "window_t": 4,
+        "n_pred": 15,
+        "n_tp": 12,
+        "precision": 0.8,
+        "recall": 0.6667,
+        "f1": 0.7273
+      }
+    },
+    "mzoom": {
+      "method": "M-Zoom",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 657.0901,
+        "n_pred": 25,
+        "n_tp": 18,
+        "precision": 0.72,
+        "recall": 1.0,
+        "f1": 0.8372,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 3.588
+      }
+    },
+    "mbiz": {
+      "method": "M-Biz",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 657.0901,
+        "n_pred": 25,
+        "n_tp": 18,
+        "precision": 0.72,
+        "recall": 1.0,
+        "f1": 0.8372,
+        "config": {
+          "density_measure": "geo"
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 3.58
+      }
+    },
+    "dcube": {
+      "method": "D-Cube",
+      "best": {
+        "n_blocks": 2,
+        "min_density": 633.5613,
+        "n_pred": 40,
+        "n_tp": 18,
+        "precision": 0.45,
+        "recall": 1.0,
+        "f1": 0.6207,
+        "config": {
+          "density_measure": "geo",
+          "policy": "density",
+          "mass_threshold": 1.0
+        },
+        "n_blocks_collected": 100,
+        "collect_s": 3.662
+      }
+    },
+    "catchcore": {
+      "method": "CatchCore",
+      "best": {
+        "n_blocks": 1,
+        "min_density": 849.2004,
+        "n_pred": 6,
+        "n_tp": 6,
+        "precision": 1.0,
+        "recall": 0.3333,
+        "f1": 0.5,
+        "config": {
+          "hs": 3,
+          "p": 0.001,
+          "cons": 20.0,
+          "etas": 10.0
+        },
+        "n_blocks_collected": 2,
+        "collect_s": 2.326
+      }
+    }
+  }
+}

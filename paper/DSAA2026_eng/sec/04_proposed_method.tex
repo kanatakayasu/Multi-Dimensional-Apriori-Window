@@ -1,0 +1,280 @@
+% ==============================================================
+\section{Proposed Method: Multi-Dimensional Apriori-Window Algorithm}
+\label{sec:method}
+% ==============================================================
+
+We propose the \textbf{Multi-Dimensional Apriori-Window algorithm}
+to solve the problem in \S\ref{sec:dense_detection}.
+
+% ==============================================================
+\subsection{1D Multiset Reduction via Fixed Spatial Start Points}\label{sec:binsearch}
+% ==============================================================
+
+For a pattern $P$ and a fixed spatial start point
+$\bm{s}_{\mathrm{sp}}$,
+we construct the temporal multiset
+$L_P(\bm{s}_{\mathrm{sp}})$
+from Definition~\ref{def:collapsed_multiset_nd}.
+This is obtained by distributing each occurrence transaction of $P$
+to all spatial start points whose window contains that transaction.
+
+\paragraph{Distribution to spatial start points.}
+When a transaction containing pattern $P$
+resides at discrete coordinates
+\[
+  \bm{b} = (b^{(0)}, b^{(1)}, \ldots, b^{(d-1)}),
+\]
+the $k$-th component ($k \geq 1$)
+of a spatial start point containing this transaction satisfies
+\[
+  s_k \in [\max(0,\, b^{(k)} - W_k),\; b^{(k)}].
+\]
+Therefore, one occurrence contributes to at most
+\[
+  W_{\mathrm{sp}} = \prod_{k=1}^{d-1} (W_k + 1)
+\]
+spatial start points.
+
+\paragraph{Construction cost.}
+Let $N_P$ denote the number of occurrence transactions of pattern $P$.
+Construction costs $O(N_P \cdot W_{\mathrm{sp}})$;
+including sorting, the total is $O(\widetilde N_P \log \widetilde N_P)$
+where $\widetilde N_P = N_P \cdot W_{\mathrm{sp}}$.
+
+% ==============================================================
+\subsection{Duplicate-Aware Interval Solver on the $t$-Axis}\label{sec:t_stride}
+% ==============================================================
+
+For a fixed spatial start point $\bm{s}_{\mathrm{sp}}$,
+we compute dense intervals from the sorted multiset
+$L = L_P(\bm{s}_{\mathrm{sp}})$.
+In two or more dimensions,
+multiple transactions may share the same timestamp,
+producing duplicates in $L$.
+Consequently, the simple ``$+1$ jump'' of the one-dimensional case
+cannot be directly applied.
+
+The key idea is a two-branch stride
+governed by the comparison of
+the window count $c$ and the threshold $\theta$
+(Figure~\ref{fig:t_stride}).
+When $c < \theta$ (non-dense),
+the left endpoint $l$ jumps to the position
+where the next event enters the window,
+skipping unnecessary scans
+(Eq.~\eqref{eq:jump_empty}, Figure~\ref{fig:t_stride}(b)).
+When $c \geq \theta$ (dense),
+the surplus $c - \theta$ determines
+a contiguous block $[l, l_{\mathrm{dense}}]$ of left endpoints
+that are all guaranteed to be dense,
+and this entire block is output as a dense interval in bulk
+(Eq.~\eqref{eq:jump_dense}, Figure~\ref{fig:t_stride}(a)).
+The correctness of this bulk processing
+is guaranteed by Lemma~\ref{lem:stride}.
+
+Specifically, the left endpoint update in the non-dense case is
+\begin{equation}\label{eq:jump_empty}
+  l \leftarrow \max(l+1,\; L[\mathrm{next}] - W_0)
+\end{equation}
+where $L[\mathrm{next}]$ is the first event
+outside the right boundary of the current window.
+In the dense case, the block right boundary is
+\begin{equation}\label{eq:jump_dense}
+  l_{\mathrm{dense}} = L[l_{\mathrm{lo}} + (c - \theta)]
+\end{equation}
+where $l_{\mathrm{lo}}$ is the first position in $L$
+that is $\geq l$.
+The dense interval's right endpoint is extended to
+$l_{\mathrm{dense}} + W_0$,
+and the left endpoint is updated to
+$l \leftarrow l_{\mathrm{dense}} + 1$.
+
+\begin{lemma}[Correctness of the dense block]\label{lem:stride}
+For $l_{\mathrm{dense}}$ defined by Eq.~\eqref{eq:jump_dense},
+for any $l' \in [l,\, l_{\mathrm{dense}}]$,
+\[
+  |\{t \in L : l' \leq t \leq l' + W_0\}| \geq \theta
+\]
+holds.
+\end{lemma}
+
+The proof is given in Appendix~\ref{sec:proofs}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{fig/fig3_t_stride.pdf}
+\caption{Duplicate-aware $t$-axis stride.
+Given a sorted multiset
+$L = \{\!\{1, 2, 2, 3, 3, 8\}\!\}$
+with $W_0{=}3$ and $\theta{=}4$.
+(a)~When $c \geq \theta$,
+the surplus determines how far the left endpoint
+can stride in bulk (Eq.~\eqref{eq:jump_dense}).
+(b)~When $c < \theta$,
+the window jumps to the next position
+where a new event enters (Eq.~\eqref{eq:jump_empty}).
+Window color gradient (dark$\to$light blue)
+indicates the progression of the left endpoint $l$.}
+\label{fig:t_stride}
+\end{figure}
+
+\begin{algorithm}[t]
+\caption{Duplicate-aware dense interval computation for a fixed spatial start point}
+\label{alg:t_stride}
+\begin{algorithmic}[1]
+\Require Sorted multiset $L$, temporal window width $W_0$, threshold $\theta$
+\Ensure Dense interval sequence $\mathcal{R}$
+\State $\mathcal{R} \leftarrow \emptyset$
+\State $l \leftarrow \max(0,\, L[\theta-1] - W_0)$
+\State $\mathit{open} \leftarrow \mathrm{false}$
+\While{$l \leq L[\mathrm{last}]$}
+  \State $l_{\mathrm{lo}} \leftarrow \mathrm{lower\_bound}(L, l)$
+  \State $l_{\mathrm{hi}} \leftarrow \mathrm{upper\_bound}(L, l + W_0)$
+  \State $c \leftarrow l_{\mathrm{hi}} - l_{\mathrm{lo}}$
+  \If{$c < \theta$}
+    \If{$\mathit{open}$}
+      \State Append current interval to $\mathcal{R}$
+      \State $\mathit{open} \leftarrow \mathrm{false}$
+    \EndIf
+    \If{$l_{\mathrm{hi}} = |L|$} \textbf{break} \EndIf
+    \State $l \leftarrow \max(l+1,\; L[l_{\mathrm{hi}}] - W_0)$
+           \Comment{Eq.~\eqref{eq:jump_empty}}
+  \Else
+    \State $l_{\mathrm{dense}} \leftarrow L[l_{\mathrm{lo}} + (c-\theta)]$
+           \Comment{Eq.~\eqref{eq:jump_dense}}
+    \State $r_{\mathrm{block}} \leftarrow l_{\mathrm{dense}} + W_0$
+    \State Start or extend current interval with $(l, r_{\mathrm{block}})$
+    \State $\mathit{open} \leftarrow \mathrm{true}$
+    \State $l \leftarrow l_{\mathrm{dense}} + 1$
+  \EndIf
+\EndWhile
+\If{$\mathit{open}$}
+  \State Append current interval to $\mathcal{R}$
+\EndIf
+\State \Return $\mathcal{R}$
+\end{algorithmic}
+\end{algorithm}
+
+% ==============================================================
+\subsection{Candidate Interval Restriction via Apriori Pruning ($k \geq 2$)}\label{sec:alg_k2}
+% ==============================================================
+
+Applying Lemma~\ref{lem:apriori} to each singleton item,
+any dense-start component of a pattern $P$
+is contained within the dense intervals
+of each item $i \in P$.
+Using this property,
+for candidate patterns $P$ we use only
+\emph{intersections of singleton interval maps}.
+
+\paragraph{Candidate interval map.}
+Let the dense region of singleton item $i$ be
+\[
+  \mathcal{R}_\theta(\{i\})
+  = \{(\bm{s}_{\mathrm{sp}}, [a,e])\}.
+\]
+Write $\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$
+for the temporal interval sequence
+belonging to the same spatial start point $\bm{s}_{\mathrm{sp}}$.
+The candidate interval map for pattern $P$ is then defined as
+\begin{equation}\label{eq:candidate_cells}
+  \mathcal{C}(P,\bm{s}_{\mathrm{sp}})
+  =
+  \bigcap_{i \in P}
+  \mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}].
+\end{equation}
+
+Here the intersection is the standard interval intersection
+on temporal intervals.
+If $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$
+for all spatial start points,
+$P$ cannot have any dense interval and is pruned.
+
+\paragraph{Exact re-evaluation.}
+Only when $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \neq \emptyset$,
+we scan the transaction sequence once
+to construct $L_P(\bm{s}_{\mathrm{sp}})$
+and run the candidate-interval version of
+Algorithm~\ref{alg:t_stride}
+over $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})$.
+
+% ==============================================================
+\subsection{Overall Algorithm and Complexity}\label{sec:complexity}
+% ==============================================================
+
+\begin{algorithm}[t]
+\caption{Multi-Dimensional Apriori-Window (interval-based implementation)}
+\label{alg:md_apriori}
+\begin{algorithmic}[1]
+\Require $d$-dimensional transaction sequence $\mathcal{D}$, $(\bm{W}, \theta)$
+\Ensure Dense region $\mathcal{R}_\theta(P)$ for each pattern $P$
+\ForAll{$i \in \mathcal{I}$}
+  \State $L_i(\bm{s}_{\mathrm{sp}}) \leftarrow$ Construct temporal multiset per spatial start point
+  \State $\mathcal{R}_\theta(\{i\}) \leftarrow$ Run Algorithm~\ref{alg:t_stride} for each $\bm{s}_{\mathrm{sp}}$
+\EndFor
+\State $\mathcal{F}_1 \leftarrow \{\{i\} : \mathcal{R}_\theta(\{i\}) \neq \emptyset\}$
+\State $k \leftarrow 2$
+\While{$\mathcal{F}_{k-1} \neq \emptyset$}
+  \State \texttt{cands} $\leftarrow$ \Call{GenerateCandidates}{$\mathcal{F}_{k-1}$}
+  \State \texttt{cands} $\leftarrow$ \Call{PruneCandidates}{\texttt{cands}, $\mathcal{F}_{k-1}$}
+  \State $\mathcal{F}_k \leftarrow \emptyset$
+  \ForAll{$P \in$ \texttt{cands}}
+    \State $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \leftarrow \bigcap_{i \in P}\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$
+           \Comment{Eq.~\eqref{eq:candidate_cells}}
+    \If{$\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$ for all $\bm{s}_{\mathrm{sp}}$}
+      \State \textbf{continue}
+    \EndIf
+    \State $L_P(\bm{s}_{\mathrm{sp}}) \leftarrow$ Construct temporal multiset for pattern $P$
+    \State $\mathcal{R}_\theta(P) \leftarrow$ Run candidate-interval duplicate-aware solver for each $\bm{s}_{\mathrm{sp}}$
+    \If{$\mathcal{R}_\theta(P) \neq \emptyset$}
+      \State $\mathcal{F}_k \leftarrow \mathcal{F}_k \cup \{P\}$
+    \EndIf
+  \EndFor
+  \State $k \leftarrow k + 1$
+\EndWhile
+\State \Return $\{\mathcal{R}_\theta(P)\}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{table}[t]
+\centering
+\caption{Computational complexity of the proposed method.
+$N_P$: number of transactions containing pattern $P$,
+$W_{\mathrm{sp}} = \prod_{k=1}^{d-1} (W_k + 1)$,
+$\widetilde N_P = N_P W_{\mathrm{sp}}$,
+$I_P$: total number of intervals in the candidate interval map.}
+\label{tab:complexity}
+\small
+\begin{tabular}{lll}
+\toprule
+Step & Complexity \\
+\midrule
+Construction of $L_P$ & $O(N_P \cdot W_{\mathrm{sp}})$ \\
+Sorting of $L_P$ & $O(\widetilde N_P \log \widetilde N_P)$ \\
+Temporal interval & \multirow{2}{*}{$O\!\left(\sum_{\bm{s}_{\mathrm{sp}}}|L_P(\bm{s}_{\mathrm{sp}})| \log |L_P(\bm{s}_{\mathrm{sp}})|\right)$} \\
+\quad computation & \\
+Candidate interval & \multirow{2}{*}{$O(I_P)$} \\
+\quad map intersection & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Therefore, the overall complexity
+faithful to the current implementation is
+\[
+  O\!\left(
+    \sum_{P \in \mathcal{F}}
+      \bigl(
+        N_P W_{\mathrm{sp}}
+        +
+        \widetilde N_P \log \widetilde N_P
+        +
+        I_P
+      \bigr)
+  \right)
+\]
+where $\mathcal{F}$ is the set of candidate patterns
+actually evaluated.
+When applied to real data,
+discretization of continuous coordinates is required
+as a preprocessing step (\S\ref{sec:experiments}).

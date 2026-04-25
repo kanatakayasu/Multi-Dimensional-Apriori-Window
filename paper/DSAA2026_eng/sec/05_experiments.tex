@@ -1,0 +1,225 @@
+% ==============================================================
+\section{Experiments}\label{sec:experiments}
+% ==============================================================
+
+We verify the scalability and effectiveness of the proposed method.
+All experiments were implemented in Rust (release build)
+and executed on Apple M3 (8 cores, 24\,GB RAM).
+
+% ==============================================================
+\subsection{EX-1: Method Comparison on Diverse Dense Region Shapes (Synthetic Data)}
+\label{sec:ex1}\label{sec:ex1_1}
+% ==============================================================
+
+\paragraph{Objective.}
+Real-world dense regions may take various shapes.
+This experiment uses synthetic data with four embedding shapes
+(rectangular, drift, intermittent, and expanding)
+to verify how well existing methods recover the exact solution
+defined by the proposed method.
+
+\paragraph{Synthetic data.}
+A $T{=}100 \times S{=}100$ grid with 20 embedded GT patterns is used.
+Four embedding shapes are evaluated:
+rectangular (Shape~A), drift (Shape~B), intermittent (Shape~C),
+and expanding (Shape~D),
+with 3 seeds per shape ($4 \times 3 = 12$ datasets in total).
+Generation details are given in Appendix~\ref{sec:ex1_data_details}.
+
+\paragraph{Baseline methods.}
+Each baseline addresses a fundamentally different formulation,
+so all tunable parameters were grid-searched to maximize each baseline's score for a fair comparison.
+The following five methods are used.
+Colocation / STCP-Miner are used in EX-1-1 (pattern detection);
+LISA / MZoom / ST-DBSCAN are used in EX-1-2 (region recovery).
+
+\begin{itemize}
+\item \textbf{Colocation}~\cite{shekhar2001colocation}: Spatial colocation mining. PI threshold $\tau$ grid-searched.
+\item \textbf{STCP-Miner}~\cite{qian2009stcolocation}: Spatio-temporal window extension of Colocation. $\tau$ and window width grid-searched.
+\item \textbf{MZoom}~\cite{shin2018mzoom}: Greedy dense block detection on the occurrence tensor of GT pattern $P$. Top $k$ grid-searched.
+\item \textbf{LISA}~\cite{anselin1995lisa}: Occurrence counts of GT pattern $P$ aggregated onto a spatial grid; High-High cells identified by Local Moran's $I$.
+\item \textbf{ST-DBSCAN}~\cite{birant2007stdbscan}: $\varepsilon_1$, $\varepsilon_2$, min\_pts grid-searched on occurrence cells of GT pattern $P$.
+\end{itemize}
+
+\paragraph{Evaluation metrics.}
+The dense pattern set $P^*$ and dense regions $R^*(P)$
+obtained under the sliding-window density definition (Definitions~3--5)
+for the explicitly embedded patterns serve as the ground truth (GT).
+Since the proposed method outputs the exact solution of this definition,
+it achieves F1 $= 1.00$ and Jaccard $= 1.00$ by construction.
+For EX-1-1,
+F1 $= 2|\hat{P} \cap P^*| / (|\hat{P}| + |P^*|)$
+measures how well each baseline identifies the GT pattern set $P^*$.
+For EX-1-2, mean Jaccard
+$= \frac{1}{|P^*|}\sum_{P \in P^*} |R^*(P) \cap \hat{R}(P)| / |R^*(P) \cup \hat{R}(P)|$
+measures how closely each baseline recovers the GT dense region $R^*(P)$.
+
+Note that each baseline solves a fundamentally different problem:
+colocation methods detect participation-index co-occurrence without defining dense regions;
+dense subtensor methods output Cartesian-product blocks, not sliding-window regions;
+clustering methods label point neighborhoods rather than windowed occurrence counts.
+EX-1 is therefore not a head-to-head competition but a characterization of
+how closely each method approximates the exact sliding-window solution.
+
+\paragraph{Proposed method parameters.}
+Common across all shapes: $W = (20, 5)$, $\theta = 30$.
+
+\paragraph{Results.}
+Fig.~\ref{fig:ex1} shows scores averaged over 3 seeds per shape.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig/fig_ex1_heatmap.pdf}
+\caption{EX-1 results (3-seed average, $p_{\mathrm{embed}}{=}0.25$).
+  (a)~EX-1-1 F1; (b)~EX-1-2 mean Jaccard.
+  GT is the exact solution under the sliding-window definition (Definitions~3--5).
+  $\dagger$The proposed method outputs the exact solution by construction,
+  hence F1 $= 1.00$ and Jaccard $= 1.00$.
+  Baseline parameters selected by grid search.}
+\label{fig:ex1}
+\end{figure}
+
+\paragraph{Analysis.}
+\emph{EX-1-1 (Pattern detection F1).}
+Colocation performs worst on Shape~D (expanding):
+during the expansion phase, the global PI computation is diluted
+over the entire observation period, suppressing the participation index.
+STCP-Miner partially avoids this dilution via temporal windowing,
+but the approximation gap remains.
+
+\emph{EX-1-2 (Region recovery, mean Jaccard).}
+All baselines remain at low scores across all shapes.
+
+\textbf{LISA} collapses occurrences over all time steps, irreversibly discarding temporal structure.
+
+\textbf{MZoom} achieves the lowest scores.
+Against an $S{=}100$-cell grid where each dense band spans only 5 cells,
+any Cartesian-product block wide enough to cover the full band
+incurs a severe density drop from the Bernoulli background.
+Greedy search therefore converges to single-column (width~1) blocks,
+missing most of the true dense region as false negatives.
+
+\textbf{ST-DBSCAN} labels only occurrence cells as cluster members,
+systematically missing non-occurrence cells inside dense windows,
+which constitute the majority of the dense region.
+
+In short, these structural mismatches---not parameter tuning---explain
+why no baseline approximates the sliding-window definition well
+across all four shapes.
+
+% ==============================================================
+\subsection{EX-2: Scalability (Synthetic Data)}
+\label{sec:ex2}
+% ==============================================================
+
+\paragraph{Objective.}
+We verify how the computation time of the proposed method
+scales with increasing number of transactions $N$,
+and whether the ratio of the number of temporal grid points $T$
+to the number of spatial grid points $S$ affects performance
+at the same $N$ (for $d=2$, $N = T \times S$).
+
+\paragraph{Synthetic data generation.}
+On a $d = 2$ lattice
+$\{0,\ldots,T{-}1\} \times \{0,\ldots,S{-}1\}$,
+each item is independently sampled from
+Bernoulli$(p_{\mathrm{item}}{=}0.10)$
+for all cells to form one basket.
+Empty cells are assigned item~1 by default,
+ensuring exactly one transaction per cell,
+so that $N = T \times S$
+(generation details in Appendix~\ref{sec:ex2_data_details}).
+
+\paragraph{Proposed method parameters.}
+$|\mathcal{I}| = 20$, $W = (24, 4)$, and $\theta = 15$ were fixed.
+
+\paragraph{Rationale for experimental axes.}
+Since linear scaling with $|\mathcal{I}|$ and $p_{\mathrm{item}}$ was confirmed
+in the 1D version~\cite{aprioriwindow},
+and the effect of $d$ is absorbed into $N = T \times S^{d-1}$,
+we fix $d = 2$ and vary $T$ and $S$.
+
+\paragraph{Experimental design.}
+$S \in \{10,\; 100,\; 1{,}000,\; 10{,}000\}$ and
+$T \in \{100,\; 1{,}000,\; 10{,}000,\; 100{,}000\}$
+yield $4 \times 4 = 16$ configurations.
+$N = T \times S$ ranges from $10^3$ to $10^9$;
+same-$N$ configurations with differing $T/S$ ratios isolate each axis's effect.
+
+\paragraph{Results.}
+Table~\ref{tab:ex2_grid} shows the execution times.
+
+\paragraph{Analysis.}
+At $N = 10^3$, 0.009 seconds; at $N = 10^8$, 587--643 seconds:
+for a $10^5$-fold increase in $N$,
+execution time increases only by a factor of approximately $6.5 \times 10^4$.
+$N = 10^9$ did not complete within 1{,}000 seconds (timeout).
+
+Even at the same $N$, the $T/S$ ratio causes differences:
+at $N = 10^7$, $T{=}100{,}000,\, S{=}100$ takes 53.1\,s
+while $T{=}1{,}000,\, S{=}10{,}000$ takes 64.9\,s (1.22$\times$).
+Larger $T$ enables more effective gap-skipping via the $t$-axis stride
+(Lemma~\ref{lem:stride}),
+while larger $S$ increases the number of spatial start points.
+
+Overall, execution time scales approximately linearly with $N$,
+and $10^8$ transactions can be processed within 10 minutes.
+
+\begin{table}[t]
+\centering
+\caption{EX-2: 2D scalability.
+  All cells with Bernoulli background only (no embedded patterns),
+  $N = T \times S$, $\theta = 15$, $W = (24, 4)$.
+  Execution time (seconds). $N = 10^9$ did not complete within 1{,}000\,s.}
+\label{tab:ex2_grid}
+\small
+\begin{tabular}{r|rrrr}
+\toprule
+$T \backslash S$ & 10 & 100 & 1{,}000 & 10{,}000 \\
+\midrule
+      100 & 0.009 &  0.059 &  0.655 &  7.18 \\
+  1{,}000 &  0.042 &  0.470 &  5.62 &  64.9 \\
+ 10{,}000 &  0.403 &  4.79 &  57.5 &  643 \\
+100{,}000 &  4.16 &  53.1 &  587 &     $>$1000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================
+\subsection{EX-3: Application to Real-World Data ($d{=}3$--$4$)}
+\label{sec:ex3}
+% ==============================================================
+
+\paragraph{Objective.}
+We apply the proposed method to real-world data from diverse domains
+and confirm that the detected patterns and dense regions
+yield interpretable insights consistent with domain knowledge.
+
+\paragraph{Datasets and results.}
+Two crime report datasets
+(Chicago Crime~\cite{chicagocrime}, NYPD Crime~\cite{nypdcrime}),
+citizen complaints (NYC 311~\cite{nyc311}),
+and an earthquake catalog (USGS Earthquake~\cite{usgseq})
+are used, spanning three domains and $d{=}3$--$4$ dimensions.
+Time is discretized into weekly bins and spatial coordinates
+into equal-width bins, converting each cell's events into a transaction.
+Dataset details and quantitative results
+are given in Appendix~\ref{sec:dataset_details}.
+
+\paragraph{Findings.}
+In Chicago Crime, ASSAULT + BATTERY forms chronic dense windows
+in south and west side districts,
+and three-item patterns (e.g., THEFT + CRIMINAL DAMAGE + BATTERY)
+pinpoint compound hotspots missed by single-category analysis.
+In NYPD Crime, compound co-occurrences of felonies and misdemeanors
+are captured at the borough and weekly granularity.
+In NYC 311, combinations of noise complaints and illegal parking
+repeatedly appear in residential neighborhoods.
+In USGS Earthquake, 4-dimensional analysis including the depth axis
+distinguishes dense patterns of shallow crustal earthquakes
+from intermediate-depth intraslab events.
+In all cases, the proposed method outputs
+\emph{which} itemsets are dense and \emph{when and where}
+as concrete spatio-temporal windows,
+providing interpretable results for domain experts.
+Detailed case studies are given in Appendix~\ref{sec:real_data_qualitative}.

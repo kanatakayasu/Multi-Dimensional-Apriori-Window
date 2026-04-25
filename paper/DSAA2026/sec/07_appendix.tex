@@ -23,155 +23,65 @@ $[l', l'+W_0]$にもすべて含まれる。
 ゆえに、$l'$においてもウィンドウ内に少なくとも$\theta$個のイベントが存在する。
 \end{proof}
 
+
 % ==============================================================
-\section{データセットの詳細}
-\label{sec:dataset_details}
+\section{EX-1 合成データ生成の詳細}
+\label{sec:ex1_data_details}
 % ==============================================================
 
-各データセットの概要を以下に示す。
+\paragraph{背景データ生成.}
+$T{=}100 \times S{=}100$のグリッド上の全格子点に1トランザクションを配置する。
+アイテム数$|\mathcal{I}|{=}40$、各セルで各アイテムをBernoulli$(p_{\mathrm{item}}{=}0.15)$で独立にサンプリングし背景トランザクションを構成する。
+全アイテムが不在のセルにはデフォルトでアイテム1を割り当てる。
+
+\paragraph{パターン埋め込み.}
+GTパターン$P_k = \{2k{-}1,\, 2k\}$（$k=1,\ldots,20$）を
+空間帯$s \in [5(k{-}1),\; 5(k{-}1){+}4]$（幅5セル）に割り当てる。
+各埋め込み形状の定義する帯内セルに対して、
+独立にBernoulli$(p_{\mathrm{embed}}{=}0.25)$でアイテム対$P_k$を同時出現させる。
+
+\paragraph{埋め込み形状.}
+各形状はパターン$P_k$の空間帯内での時空間的分布を規定する
+（帯の開始位置$b_s = 5(k-1)$、終端$b_e = b_s + 4$）。
 
 \begin{itemize}
-\item \textbf{Chicago Crime}~\cite{chicagocrime}:
-  シカゴ市が公開する犯罪報告データ。
-  各レコードは日時、緯度、経度、
-  犯罪種別（窃盗、暴行、薬物等33種）を含む。
-\item \textbf{NYPD Crime}~\cite{nypdcrime}:
-  ニューヨーク市警察が公開する犯罪報告データ。
-  各レコードは日時、緯度、経度、
-  犯罪種別（69種）を含む。
-\item \textbf{NYC 311}~\cite{nyc311}:
-  ニューヨーク市の市民苦情（311）データ。
-  各レコードは通報日時、緯度、経度、
-  苦情種別（騒音、違法駐車、漏水等232種）を含む。
-\item \textbf{USGS Earthquake}~\cite{usgseq}:
-  米国地質調査所（USGS）が公開する地震カタログ。
-  各レコードは日時、緯度、経度、深さ、マグニチュードを含む。
-  マグニチュードを5段階
-  （M2.5--3.0, 3.0--4.0, 4.0--5.0, 5.0--6.0, 6.0+）に離散化し
-  アイテムとして使用した。
-  本データセットのみ4次元
-  （時間＋緯度＋経度＋深さ）である。
+\item \textbf{Shape A（矩形）}:
+  $t \in [30,70]$、$s \in [b_s, b_e]$の全セルに一様に埋め込む。
+  時刻・空間ともに固定された最もシンプルな矩形領域。
+\item \textbf{Shape B（ドリフト）}:
+  $t \in [30,70]$の各時刻$t$において、
+  空間中心$s_c = \lfloor b_s + (t - 30) / 40 \cdot 2 \rceil$（$b_s$から$b_s{+}2$へ線形移動）を中心に
+  幅5セルの帯を配置する。
+  時刻とともに密集帯が空間軸を滑らかに移動する。
+\item \textbf{Shape C（断続）}:
+  $t \in [15,35] \cup [65,85]$、$s \in [b_s, b_e]$。
+  同一空間帯に2つの独立した時間区間で密集が発生する。
+\item \textbf{Shape D（拡大）}:
+  $t \in [30,40]$: 空間中心$b_s{+}2$の1セル（幅1）；
+  $t \in [41,55]$: $s \in [b_s{+}1, b_e{-}1]$（幅3）；
+  $t \in [56,70]$: $s \in [b_s, b_e]$（幅5）。
+  時間が進むにつれて空間幅が段階的に拡大する。
 \end{itemize}
 
-基本統計量をTable~\ref{tab:datasets}に示す。
-
-\begin{table}[h]
-\centering
-\caption{実験データセット。
-\#Events: 有効イベント数、
-\#Items: アイテム種類数、
-avg$\ell$: セルあたり平均アイテム数、
-$d$: 次元数。}
-\label{tab:datasets}
-\small
-\begin{tabular}{lrrrr}
-\toprule
-Dataset & \#Events & \#Items & avg$\ell$ & $d$ \\
-\midrule
-Chicago Crime~\cite{chicagocrime}       & 1,168,412 &  33 & 7.59 & 3 \\
-NYPD Crime~\cite{nypdcrime}             & 2,317,293 &  69 & 5.67 & 3 \\
-NYC 311~\cite{nyc311}                   & 9,132,214 & 232 & 18.14 & 3 \\
-USGS Earthquake~\cite{usgseq}          &    30,224 &   5 & 1.17 & 4 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-各データセットのグリッド構成の詳細は以下の通りである。
-Chicago Crimeは
-週$\times$緯度ビン（$0.02^\circ$）$\times$経度ビン（$0.02^\circ$）のグリッド：
-$261 \times 20 \times 21$（47,217セル）を使用した。
-NYPD Crime：$261 \times 43 \times 58$（189,481セル）。
-NYC 311：$157 \times 43 \times 58$（135,490セル）。
-USGS Earthquakeは
-週$\times$緯度ビン（$0.5^\circ$）$\times$経度ビン（$0.5^\circ$）$\times$
-深さビン（35\,km）のグリッド：
-$1{,}096 \times 20 \times 20 \times 20$（13,151セル）を使用した。
-USGS Earthquakeのアイテムはマグニチュード帯
-（M2.5--3.0, 3.0--4.0, 4.0--5.0, 5.0--6.0, 6.0+）の5種類である。
-
-% ==============================================================
-\section{EX-1 比較手法のグリッドサーチパラメータ}
-\label{sec:grid_search_params_r1}
-% ==============================================================
-
-EX-1-1ではF1を最大化する設定を、
-EX-1-2では平均Jaccardを最大化する設定を採用した。
-ColocationおよびSTCP-MinerはEX-1-1（パターン検出）のみに参加し、
-MZoom、LISA、ST-DBSCANはEX-1-2（領域復元）のみに参加し、
-GTパターンを入力として与えた。
+\paragraph{評価設定.}
+各形状につき乱数シード3種（seed $\in \{42,55,68\}$）でデータを生成し、
+計$4 \times 3 = 12$データセットで評価する。
+提案手法のパラメータは$W = (20, 5)$、$\theta = 30$で全形状共通とした。
+比較手法のパラメータ範囲はTable~\ref{tab:params_ex3}の通りグリッドサーチにより決定した。
 
 \begin{table}[h]
 \centering
 \caption{EX-1比較手法のグリッドサーチパラメータ範囲。}
-\label{tab:params_exr1_appendix}
+\label{tab:params_ex3}
 \small
 \begin{tabular}{lp{0.62\columnwidth}}
 \toprule
 手法 & グリッドサーチ対象 \\
 \midrule
-Colocation   & \begin{tabular}[t]{@{}l@{}}
-                 PI閾値 $\tau \in \{0.1, 0.2, \ldots, 0.9\}$
-               \end{tabular} \\
-STCP-Miner   & \begin{tabular}[t]{@{}l@{}}
-                 PI閾値 $\tau \in \{0.1, 0.2, \ldots, 0.9\}$ \\
-                 ウィンドウ幅 $W_t \in \{4, 8, 13, 26, 54\}$
-               \end{tabular} \\
-MZoom  & \begin{tabular}[t]{@{}l@{}}
-                 密度尺度 $\in \{\mathrm{geo}, \mathrm{ari}, \mathrm{susp}\}$ \\
-                 Topブロック数 $k \in \{1, 2, \ldots, 100\}$
-               \end{tabular} \\
-LISA         & \begin{tabular}[t]{@{}l@{}}
-                 $k$近傍数 $k \in \{3, 5\}$ \\
-                 有意水準 $\alpha = 0.05$
-               \end{tabular} \\
-ST-DBSCAN    & \begin{tabular}[t]{@{}l@{}}
-                 空間距離 $\varepsilon_1 \in \{1, 2, 3\}$ \\
-                 時間距離 $\varepsilon_2 \in \{1, 2, 4, 8\}$ \\
-                 最小点数 min\_pts $\in \{2, 3, 5\}$
-               \end{tabular} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:best_params_f1}に各データセットで
-最良スコアを達成したパラメータ設定を示す。
-
-\begin{table}[h]
-\centering
-\caption{EX-1：データセットごとの採用パラメータ設定（グリッドサーチ結果）。}
-\label{tab:best_params_f1}
-\small
-\begin{tabular}{llr}
-\toprule
-データセット & 手法 & 採用パラメータ \\
-\midrule
-\multirow{5}{*}{Chicago}
-  & Colocation  & $\tau{=}0.4$ \\
-  & STCP-Miner  & $\tau{=}0.5,\; W_t{=}4$ \\
-  & MZoom      & susp, $k{=}1$ \\
-  & LISA       & $k{=}3$ \\
-  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}8,\;\mathrm{minPts}{=}5$ \\
-\midrule
-\multirow{5}{*}{NYPD}
-  & Colocation  & $\tau{=}0.3$ \\
-  & STCP-Miner  & $\tau{=}0.3,\; W_t{=}54$ \\
-  & MZoom      & susp, $k{=}1$ \\
-  & LISA       & $k{=}3$ \\
-  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}4,\;\mathrm{minPts}{=}3$ \\
-\midrule
-\multirow{5}{*}{NYC 311}
-  & Colocation  & $\tau{=}0.4$ \\
-  & STCP-Miner  & $\tau{=}0.4,\; W_t{=}54$ \\
-  & MZoom      & susp, $k{=}1$ \\
-  & LISA       & $k{=}3$ \\
-  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}1,\;\mathrm{minPts}{=}3$ \\
-\midrule
-\multirow{5}{*}{USGS EQ}
-  & Colocation  & $\tau{=}0.1$ \\
-  & STCP-Miner  & $\tau{=}0.1,\; W_t{=}4$ \\
-  & MZoom      & ari, $k{=}100$ \\
-  & LISA       & $k{=}5$ \\
-  & ST-DBSCAN  & $\varepsilon_1{=}3,\;\varepsilon_2{=}8,\;\mathrm{minPts}{=}2$ \\
+Colocation   & PI閾値 $\tau \in \{0.05, 0.07, \ldots, 0.49\}$（23値） \\
+STCP-Miner   & PI閾値（同上） $\times$ ウィンドウ幅 $W_t \in \{4, 13, 26, 54\}$ \\
+MZoom        & Topブロック数 $k \in \{1, 2, 3, 5\}$ \\
+ST-DBSCAN    & $\varepsilon_1 \in \{1,2,3\}$、$\varepsilon_2 \in \{3,7,15\}$、min\_pts $\in \{2,5\}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -182,7 +92,7 @@ Table~\ref{tab:best_params_f1}に各データセットで
 % ==============================================================
 
 EX-2では、$d = 2$のグリッド
-$\{0,\ldots,T{-}1\} \times \{0,\ldots,s{-}1\}$の
+$\{0,\ldots,T{-}1\} \times \{0,\ldots,S{-}1\}$の
 \textbf{全}格子点に1トランザクションを配置して合成データを生成する。
 各トランザクションについて、
 語彙サイズ$|\mathcal{I}| = 20$、
@@ -190,7 +100,7 @@ $\{0,\ldots,T{-}1\} \times \{0,\ldots,s{-}1\}$の
 各アイテムを独立にBernoulli$(p_{\mathrm{item}})$からサンプリングする。
 全アイテムが不在のセルにはデフォルトでアイテム1を割り当て、
 各セルに正確に1トランザクションが存在することを保証する。
-これによりトランザクション数は正確に$N = T \times s$となる。
+これによりトランザクション数は正確に$N = T \times S$となる。
 
 埋め込みパターンは注入しない。
 密集パターンはBernoulli背景の統計的揺らぎから自然に生じる。
@@ -199,6 +109,136 @@ $\{0,\ldots,T{-}1\} \times \{0,\ldots,s{-}1\}$の
 十分な数のパターンが検出されることを確認した。
 
 \S\ref{sec:ex2}で述べた通り、
-$d$次元グリッドにおける$d$の増加に伴う$N = T \times s^{d-1}$の成長は
+$d$次元グリッドにおける$d$の増加に伴う$N = T \times S^{d-1}$の成長は
 $N$スケーラビリティに吸収されるため、
 次元数に関する別途のスケーラビリティ実験は不要である。
+
+% ==============================================================
+\section{実データセットの詳細}
+\label{sec:real_data_qualitative}\label{sec:dataset_details}
+% ==============================================================
+
+\paragraph{データセット概要.}
+EX-3（\S\ref{sec:ex3}）で使用した4つの実データセットの詳細を示す。
+
+\begin{itemize}
+\item \textbf{Chicago Crime}~\cite{chicagocrime}:
+  シカゴ市が公開する犯罪報告データ。
+  日時・緯度・経度・犯罪種別（33種）を含む。
+  時間を週単位、緯度・経度をそれぞれ$0.02^\circ$等幅ビンに離散化した
+  （グリッドサイズ$261 \times 20 \times 21$）。
+\item \textbf{NYPD Crime}~\cite{nypdcrime}:
+  ニューヨーク市警察が公開する犯罪報告データ。
+  犯罪種別（69種）を含む。
+  週単位・$0.02^\circ$空間ビン
+  （グリッドサイズ$261 \times 43 \times 57$）。
+\item \textbf{NYC 311}~\cite{nyc311}:
+  ニューヨーク市の市民苦情（311）データ。
+  苦情種別（232種）を含む。
+  週単位・$0.02^\circ$空間ビン
+  （グリッドサイズ$261 \times 43 \times 57$）。
+\item \textbf{USGS Earthquake}~\cite{usgseq}:
+  米国地質調査所が公開する地震カタログ。
+  マグニチュードを5段階に離散化してアイテムとした。
+  本データセットのみ4次元（時間$\times$緯度$\times$経度$\times$深さ）で、
+  グリッドサイズ$1{,}096 \times 20 \times 20 \times 4$。
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{実験データセット。
+$N$: トランザクション数（非空セル数）、
+\#Items: アイテム種類数、
+avg$\ell$: トランザクションあたり平均アイテム数、
+$d$: 次元数。}
+\label{tab:datasets}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $N$ & \#Items & avg$\ell$ & $d$ \\
+\midrule
+Chicago Crime~\cite{chicagocrime}  &  47,217 &  33 &  7.59 & 3 \\
+NYPD Crime~\cite{nypdcrime}        & 189,481 &  69 &  5.67 & 3 \\
+NYC 311~\cite{nyc311}              & 135,490 & 232 & 18.14 & 3 \\
+USGS Earthquake~\cite{usgseq}      &  13,151 &   5 &  1.17 & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{実験パラメータ.}
+全データセットで最大パターン長$|P| \leq 3$とした。
+3次元データセット（Chicago/NYPD/NYC 311）は時間ウィンドウ$W_0 = 4$週・
+空間ウィンドウ$W_k = 3$ビン（$k = 1, 2$）を共通とし、
+閾値$\theta$のみ調整した。
+USGS Earthquakeは$W_0 = 13$週・$W_k = 2$ビン（$k = 1,2,3$）、
+$\theta = 2$とした。
+
+\paragraph{分析結果.}
+Table~\ref{tab:realdata_npatterns}に各データセットの検出パターン数と実行時間を示す。
+パターン数はアイテム語彙サイズに応じて増加し、
+実行時間はデータ規模と語彙に比例して0.5--108.7秒の範囲にある。
+以下に各データセットの詳細な分析を示す。
+
+\begin{table}[h]
+\centering
+\caption{実データにおける提案手法の検出結果。
+  $\theta$: 密集閾値、
+  合計: 全サイズのパターン数、
+  time: 実行時間（秒）。}
+\label{tab:realdata_npatterns}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $W$ & $\theta$ & 合計 & time (s) \\
+\midrule
+Chicago Crime  & $(4,3,3)$    &   3 & 2,835 &   9.7 \\
+NYPD Crime     & $(4,3,3)$    &   5 & 4,478 &  38.2 \\
+NYC 311        & $(4,3,3)$    &  35 & 5,130 & 108.7 \\
+USGS Earthq.   & $(13,2,2,2)$ &   2 &    18 &   0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Chicago Crime.}
+約5年（261週）・シカゴ全域を対象とした3次元グリッド解析で
+33種の犯罪カテゴリに対し2,835パターンを検出した。
+ASSAULT + BATTERY（暴行・傷害）のペアはシカゴ南部・西部の複数地区に
+4週$\times$3ビン$\times$3ビンの密集ウィンドウを形成し、
+年間を通じた慢性的な犯罪集中を記述する。
+THEFT + CRIMINAL DAMAGE（窃盗・器物損壊）の対は商業地区・市街地に多く、
+週単位の密集として現れる。
+さらに THEFT + CRIMINAL DAMAGE + BATTERY のような3種複合パターンは、
+複数の犯罪種が同一時空間ウィンドウに同時集中する高犯罪密度の地域・期間を
+精密に特定し、より広い単独カテゴリ分析では見落とされがちな複合的ホットスポットを浮き彫りにする。
+
+\emph{NYPD Crime.}
+ニューヨーク市全域の約5年分のデータで69種の犯罪カテゴリに対し4,478パターンを検出した。
+シカゴ（33種）より語彙が多いため検出パターン数も増加し、
+重罪（Felony Assault、Robberyなど）と軽犯罪（Petit Larceny、Criminal Mischiefなど）の
+複合共起を区（borough）・週単位で詳細に把握できる。
+個々の犯罪種は低頻度であっても、特定の街区・時期に組み合わせとして局所集中する
+パターンが多数存在し、単純な発生頻度ランキングでは検出できない複合的な治安構造を
+提案手法は明示的に記述する。
+
+\emph{NYC 311.}
+232種という最大語彙の苦情カテゴリに対し5,130パターン（最多）を検出した。
+Noise -- Residential や Noise -- Street/Sidewalk と
+Illegal Parking の組み合わせは、住宅密集地区の特定週に繰り返し密集ウィンドウを形成し、
+生活環境の複合的悪化を示す。
+夏季には建設騒音・ゴミ収集問題・路上駐車苦情の3種複合パターンが
+特定地区で増加する傾向が見られ、季節性の複合問題を捉えることができる。
+語彙が232種と大きいため単独苦情の頻度分析では埋もれる共起パターンが多く、
+時空間的絞り込みにより区・週レベルの施策立案への活用が期待される。
+
+\emph{USGS Earthquake.}
+約21年（1,096週）の地震カタログを
+時間$\times$緯度$\times$経度$\times$深さの4次元グリッドで解析し、
+5マグニチュードバンドに対して18パターンを検出した。
+M3.0--4.0 + M4.0--5.0 の共起パターンは、特定の緯度・経度・深さ・期間の
+ウィンドウに複数マグニチュード帯の地震が密集する状況を示し、
+本震後の余震シーケンスや群発地震活動の典型的な特徴と整合する。
+深さ軸を含む4次元記述により、
+浅発地震（地殻内）と中深発地震（スラブ内）を区別した密集パターンが識別可能で、
+断層種類や沈み込み帯の構造的特徴との対応が示唆される。
+アイテム語彙が5種と最小であるため計算量は低く、
+4次元の高次元設定においても提案手法が実時間で動作することを示す。

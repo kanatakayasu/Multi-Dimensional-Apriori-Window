@@ -5,10 +5,6 @@
 
 \S\ref{sec:dense_detection} の問題を解くための
 \textbf{多次元 Apriori-Window アルゴリズム}を提案する。
-現在の実装は密集開始点集合やサポートサーフェスを明示的に構築しない。
-その代わり、各固定空間開始点に対して
-\emph{重複考慮1次元 Apriori-Window} を解き、
-出力を密集領域として保持する。
 
 % ==============================================================
 \subsection{固定空間開始点による1次元多重集合還元}\label{sec:binsearch}
@@ -46,45 +42,36 @@ $L_P(\bm{s}_{\mathrm{sp}})$ を構築する。
 % ==============================================================
 
 固定空間開始点 $\bm{s}_{\mathrm{sp}}$ に対し、
-ソート済み多重集合 $L = L_P(\bm{s}_{\mathrm{sp}})$ を考える。
-ここで重要なのは、2次元以上では同じタイムスタンプが複数回出現しうることである。
-このため、1次元の単純な ``$+1$ ジャンプ'' をそのまま使うのではなく、
-\emph{現在の窓だけで密集が保証される左端の連続ブロック}を一括処理する。
+ソート済み多重集合 $L = L_P(\bm{s}_{\mathrm{sp}})$ から
+密集区間を計算する。
+2次元以上では複数のトランザクションが同一時刻に存在しうるため、
+$L$ には重複タイムスタンプが含まれる。
+このため、1次元 Apriori-Window の単純な ``$+1$ ジャンプ''
+をそのまま適用できない。
 
-\paragraph{$c < \theta$ のときのジャンプ.}
-現在の時間左端を $l$、窓内カウントを $c$ とする。
-$c < \theta$ のとき、新しいイベントが窓へ入り始める最小の左端まで飛ぶことができる：
+本手法の工夫は、窓内カウント $c$ と閾値 $\theta$ の大小に応じた
+2分岐のストライドにある（図~\ref{fig:t_stride}）。
+$c < \theta$（非密集）のとき、窓右端の外側にある次のイベントが
+入る位置まで $l$ をジャンプし、無駄な走査を省く
+（式~\eqref{eq:jump_empty}、図~\ref{fig:t_stride}(b)）。
+$c \geq \theta$（密集）のとき、余剰 $c - \theta$ から
+密集が保証される左端の連続ブロック $[l, l_{\mathrm{dense}}]$ を求め、
+ブロック全体を一括で密集区間として出力する
+（式~\eqref{eq:jump_dense}、図~\ref{fig:t_stride}(a)）。
+この一括処理の正確性は補題~\ref{lem:stride} で保証される。
+
+具体的には、非密集時の左端更新は
 \begin{equation}\label{eq:jump_empty}
   l \leftarrow \max(l+1,\; L[\mathrm{next}] - W_0)
 \end{equation}
-ここで $L[\mathrm{next}]$ は現在窓の右境界外にある最初のイベントである。
-
-\paragraph{$c \geq \theta$ のときの密集ブロック.}
-$l_{\mathrm{lo}}$ を $L$ 中で $\geq l$ となる最初の位置、
-$c$ を現在窓内のイベント数とする。
-余剰 $\mathrm{surplus} = c - \theta \geq 0$ に対して、
+であり（$L[\mathrm{next}]$ は現在窓の右境界外にある最初のイベント）、
+密集時の一括ブロック右端は
 \begin{equation}\label{eq:jump_dense}
-  l_{\mathrm{dense}}
-  = L[l_{\mathrm{lo}} + \mathrm{surplus}]
+  l_{\mathrm{dense}} = L[l_{\mathrm{lo}} + (c - \theta)]
 \end{equation}
-と定める。このとき $[l,\, l_{\mathrm{dense}}]$ のすべての左端は密集である。
-よって現在の窓は密集開始点の連続ブロック
-\[
-  [l,\, l_{\mathrm{dense}}]
-\]
-を一括で処理していることになる。
-
-このブロックに対する密集区間の右端は
-\[
-  r_{\mathrm{block}}
-  = l_{\mathrm{dense}} + W_0
-\]
-である（定義~\ref{def:dense_region_nd}）。
-したがって現在の出力区間を $r_{\mathrm{block}}$ まで延長し、
-\[
-  l \leftarrow l_{\mathrm{dense}} + 1
-\]
-と更新する。
+で与えられる（$l_{\mathrm{lo}}$ は $L$ 中で $\geq l$ となる最初の位置）。
+密集区間の右端を $l_{\mathrm{dense}} + W_0$ まで延長し、
+$l \leftarrow l_{\mathrm{dense}} + 1$ と更新する。
 
 \begin{lemma}[密集ブロックの正確性]\label{lem:stride}
 式~\eqref{eq:jump_dense} で定めた $l_{\mathrm{dense}}$ に対し、
@@ -97,6 +84,20 @@ $c$ を現在窓内のイベント数とする。
 
 証明は付録~\ref{sec:proofs}に示す。
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{fig/fig3_t_stride.pdf}
+\caption{重複考慮 $t$ 軸ストライド。
+ソート済み多重集合
+$L = \{\!\{1, 2, 2, 3, 3, 8\}\!\}$，
+$W_0{=}3$，$\theta{=}4$。
+(a)~$c \geq \theta$ のとき，
+余剰が左端を一括でストライドできる幅を決める（式~\eqref{eq:jump_dense}）。
+(b)~$c < \theta$ のとき，
+新たなイベントが入る位置へ窓がジャンプする（式~\eqref{eq:jump_empty}）。
+窓の色グラデーション（濃青$\to$淡青）は左端 $l$ の進行を示す。}
+\label{fig:t_stride}
+\end{figure}
 
 \begin{algorithm}[t]
 \caption{固定空間開始点に対する重複考慮密集区間計算}
@@ -226,8 +227,10 @@ $I_P$: 候補 interval map の総区間数。}
 \midrule
 $L_P$ の構築 & $O(N_P \cdot W_{\mathrm{sp}})$ \\
 $L_P$ のソート & $O(\widetilde N_P \log \widetilde N_P)$ \\
-時間区間計算 & $O\!\left(\sum_{\bm{s}_{\mathrm{sp}}}|L_P(\bm{s}_{\mathrm{sp}})| \log |L_P(\bm{s}_{\mathrm{sp}})|\right)$ \\
-候補 interval map 交差 & $O(I_P)$ \\
+時間区間 & \multirow{2}{*}{$O\!\left(\sum_{\bm{s}_{\mathrm{sp}}}|L_P(\bm{s}_{\mathrm{sp}})| \log |L_P(\bm{s}_{\mathrm{sp}})|\right)$} \\
+\quad 計算 & \\
+候補 interval map & \multirow{2}{*}{$O(I_P)$} \\
+\quad 交差 & \\
 \bottomrule
 \end{tabular}
 \end{table}
