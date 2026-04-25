@@ -140,33 +140,36 @@ $W_0{=}3$，$\theta{=}4$。
 \subsection{Apriori 枝刈りによる候補区間制限（$k \geq 2$）}\label{sec:alg_k2}
 % ==============================================================
 
-補題~\ref{lem:apriori} を各 singleton item に適用すると、
-パターン $P$ の任意の密集開始成分は
-各 item $i \in P$ の密集区間に含まれる。
+補題~\ref{lem:apriori} を再帰的に適用すると、
+サイズ $k$ のパターン $P$ の任意の密集開始成分は
+$P$ の各 $(k{-}1)$-部分集合の密集区間にも含まれる。
 この性質を用いて、候補パターン $P$ には
-\emph{singleton interval map の交差}のみを使用する。
+\emph{$(k{-}1)$-部分集合 interval map の交差}を使用する。
 
 \paragraph{候補 interval map.}
-singleton item $i$ の密集領域を
+パターン $Q$ の密集領域を
 \[
-  \mathcal{R}_\theta(\{i\})
+  \mathcal{R}_\theta(Q)
   = \{(\bm{s}_{\mathrm{sp}}, [a,e])\}
 \]
 とする。
 同じ空間開始点 $\bm{s}_{\mathrm{sp}}$ に属する時間区間列を
-$\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$ と書く。
-候補パターン $P$ の候補 interval map を
+$\mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}]$ と書く。
+サイズ $k$ の候補パターン $P$ の候補 interval map を
 \begin{equation}\label{eq:candidate_cells}
   \mathcal{C}(P,\bm{s}_{\mathrm{sp}})
   =
-  \bigcap_{i \in P}
-  \mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]
+  \bigcap_{Q \in \binom{P}{k-1}}
+  \mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}]
 \end{equation}
 と定義する。
 
 ここでの交差は時間区間に対する標準的な区間交差である。
+$\binom{P}{k-1}$ は $P$ の全 $(k{-}1)$-部分集合を表す。
 すべての空間開始点で $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$
 ならば、$P$ は密集区間を持ちえないため枝刈りされる。
+$k=2$ では $\binom{P}{1}$ は singleton 集合に一致するため、
+各 item の密集区間を交差する特殊ケースとなる。
 
 \paragraph{厳密再評価.}
 $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \neq \emptyset$ の場合にのみ、
@@ -195,7 +198,7 @@ $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})$ に対して実行する。
   \State \texttt{cands} $\leftarrow$ \Call{PruneCandidates}{\texttt{cands}, $\mathcal{F}_{k-1}$}
   \State $\mathcal{F}_k \leftarrow \emptyset$
   \ForAll{$P \in$ \texttt{cands}}
-    \State $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \leftarrow \bigcap_{i \in P}\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$
+    \State $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \leftarrow \bigcap_{Q \in \binom{P}{k-1}}\mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}]$
            \Comment{式~\eqref{eq:candidate_cells}}
     \If{すべての $\bm{s}_{\mathrm{sp}}$ で $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$}
       \State \textbf{continue}

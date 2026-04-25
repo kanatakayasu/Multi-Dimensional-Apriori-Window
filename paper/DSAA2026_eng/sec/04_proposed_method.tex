@@ -159,36 +159,39 @@ indicates the progression of the left endpoint $l$.}
 \subsection{Candidate Interval Restriction via Apriori Pruning ($k \geq 2$)}\label{sec:alg_k2}
 % ==============================================================
 
-Applying Lemma~\ref{lem:apriori} to each singleton item,
-any dense-start component of a pattern $P$
+Applying Lemma~\ref{lem:apriori} recursively,
+any dense-start component of a size-$k$ pattern $P$
 is contained within the dense intervals
-of each item $i \in P$.
+of each $(k{-}1)$-subset of $P$.
 Using this property,
-for candidate patterns $P$ we use only
-\emph{intersections of singleton interval maps}.
+for candidate patterns $P$ we use
+\emph{intersections of $(k{-}1)$-subset interval maps}.
 
 \paragraph{Candidate interval map.}
-Let the dense region of singleton item $i$ be
+Let the dense region of pattern $Q$ be
 \[
-  \mathcal{R}_\theta(\{i\})
+  \mathcal{R}_\theta(Q)
   = \{(\bm{s}_{\mathrm{sp}}, [a,e])\}.
 \]
-Write $\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$
+Write $\mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}]$
 for the temporal interval sequence
 belonging to the same spatial start point $\bm{s}_{\mathrm{sp}}$.
-The candidate interval map for pattern $P$ is then defined as
+The candidate interval map for a size-$k$ pattern $P$ is then defined as
 \begin{equation}\label{eq:candidate_cells}
   \mathcal{C}(P,\bm{s}_{\mathrm{sp}})
   =
-  \bigcap_{i \in P}
-  \mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}].
+  \bigcap_{Q \in \binom{P}{k-1}}
+  \mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}].
 \end{equation}
 
 Here the intersection is the standard interval intersection
-on temporal intervals.
+on temporal intervals, and $\binom{P}{k-1}$ denotes the set of all
+$(k{-}1)$-subsets of $P$.
 If $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$
 for all spatial start points,
 $P$ cannot have any dense interval and is pruned.
+For $k=2$, $\binom{P}{1}$ reduces to singletons,
+so this is a generalization of the singleton intersection.
 
 \paragraph{Exact re-evaluation.}
 Only when $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \neq \emptyset$,
@@ -219,7 +222,7 @@ over $\mathcal{C}(P,\bm{s}_{\mathrm{sp}})$.
   \State \texttt{cands} $\leftarrow$ \Call{PruneCandidates}{\texttt{cands}, $\mathcal{F}_{k-1}$}
   \State $\mathcal{F}_k \leftarrow \emptyset$
   \ForAll{$P \in$ \texttt{cands}}
-    \State $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \leftarrow \bigcap_{i \in P}\mathcal{R}_\theta(\{i\})[\bm{s}_{\mathrm{sp}}]$
+    \State $\mathcal{C}(P,\bm{s}_{\mathrm{sp}}) \leftarrow \bigcap_{Q \in \binom{P}{k-1}}\mathcal{R}_\theta(Q)[\bm{s}_{\mathrm{sp}}]$
            \Comment{Eq.~\eqref{eq:candidate_cells}}
     \If{$\mathcal{C}(P,\bm{s}_{\mathrm{sp}})=\emptyset$ for all $\bm{s}_{\mathrm{sp}}$}
       \State \textbf{continue}

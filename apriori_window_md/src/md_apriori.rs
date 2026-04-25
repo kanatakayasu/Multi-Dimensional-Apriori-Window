@@ -340,6 +340,47 @@ fn build_spatial_t_events_for_pattern_nd(
     })
 }
 
+fn build_spatial_t_events_for_pattern_restricted_nd(
+    txns: &[TxnND],
+    pattern: &[i64],
+    params: &MdNDParams,
+    dims: &[usize],
+    allowed_spatial_starts: &HashSet<Vec<usize>>,
+) -> BTreeMap<Vec<usize>, Vec<i64>> {
+    let spatial_window_bins = &params.window_bins[1..];
+    let spatial_dims = &dims[1..];
+    let mut map: BTreeMap<Vec<usize>, Vec<i64>> = BTreeMap::new();
+
+    for tx in txns {
+        if !pattern.iter().all(|item| tx.items.contains(item)) {
+            continue;
+        }
+
+        let time = tx.coords[0] as i64;
+        let ranges: Vec<std::ops::RangeInclusive<usize>> = tx.coords[1..]
+            .iter()
+            .zip(spatial_window_bins.iter())
+            .zip(spatial_dims.iter())
+            .map(|((&coord, &window), &dim_size)| {
+                let start_lo = coord.saturating_sub(window - 1);
+                let start_hi = coord.min(dim_size.saturating_sub(1));
+                start_lo..=start_hi
+            })
+            .collect();
+
+        for_each_product(&ranges, &mut |spatial_start| {
+            if allowed_spatial_starts.contains(spatial_start) {
+                map.entry(spatial_start.to_vec()).or_default().push(time);
+            }
+        });
+    }
+
+    for times in map.values_mut() {
+        times.sort_unstable();
+    }
+    map
+}
+
 // ---------------------------------------------------------------------------
 // t 軸区間計算
 // ---------------------------------------------------------------------------
@@ -484,7 +525,7 @@ pub fn find_dense_itemsets_nd(
     all_items.dedup();
 
     let data_length = dims[0] as i64;
-    let mut singleton_interval_maps: HashMap<i64, IntervalMapND> = HashMap::new();
+    let mut interval_maps: HashMap<Vec<i64>, IntervalMapND> = HashMap::new();
     let mut result: HashMap<Vec<i64>, Vec<DenseRegionND>> = HashMap::new();
     let mut current_level = Vec::new();
 
@@ -495,8 +536,8 @@ pub fn find_dense_itemsets_nd(
             continue;
         }
 
-        singleton_interval_maps.insert(item, interval_map.clone());
         let key = vec![item];
+        interval_maps.insert(key.clone(), interval_map.clone());
         result.insert(key.clone(), to_dense_regions(&interval_map));
         current_level.push(key);
     }
@@ -512,15 +553,20 @@ pub fn find_dense_itemsets_nd(
 
         let mut next_level = Vec::new();
         for pattern in candidates {
-            let spatial_t_events = build_spatial_t_events_for_pattern_nd(&txns, &pattern, params, &dims);
-            if spatial_t_events.is_empty() {
-                continue;
-            }
-
             let interval_map = if params.use_apriori_prune {
-                let allowed_sources: Option<Vec<&IntervalMapND>> = pattern
+                // Use (k-1)-subset interval maps for tighter pruning
+                let subsets: Vec<Vec<i64>> = (0..pattern.len())
+                    .map(|i| {
+                        pattern.iter().enumerate()
+                            .filter(|&(j, _)| j != i)
+                            .map(|(_, &v)| v)
+                            .collect()
+                    })
+                    .collect();
+
+                let allowed_sources: Option<Vec<&IntervalMapND>> = subsets
                     .iter()
-                    .map(|item| singleton_interval_maps.get(item))
+                    .map(|subset| interval_maps.get(subset))
                     .collect();
                 let Some(allowed_sources) = allowed_sources else {
                     continue;
@@ -534,6 +580,16 @@ pub fn find_dense_itemsets_nd(
                     continue;
                 }
 
+                // Only distribute to spatial starts that appear in C(P)
+                let allowed_spatial_starts: HashSet<Vec<usize>> =
+                    candidate_interval_map.keys().cloned().collect();
+                let spatial_t_events = build_spatial_t_events_for_pattern_restricted_nd(
+                    &txns, &pattern, params, &dims, &allowed_spatial_starts,
+                );
+                if spatial_t_events.is_empty() {
+                    continue;
+                }
+
                 compute_interval_map_with_candidates_nd(
                     &spatial_t_events,
                     params,
@@ -541,6 +597,10 @@ pub fn find_dense_itemsets_nd(
                     data_length,
                 )
             } else {
+                let spatial_t_events = build_spatial_t_events_for_pattern_nd(&txns, &pattern, params, &dims);
+                if spatial_t_events.is_empty() {
+                    continue;
+                }
                 compute_interval_map_nd(&spatial_t_events, params, data_length)
             };
 
@@ -548,6 +608,7 @@ pub fn find_dense_itemsets_nd(
                 continue;
             }
 
+            interval_maps.insert(pattern.clone(), interval_map.clone());
             result.insert(pattern.clone(), to_dense_regions(&interval_map));
             next_level.push(pattern);
         }

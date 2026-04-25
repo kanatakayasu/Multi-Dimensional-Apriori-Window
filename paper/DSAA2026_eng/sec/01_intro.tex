@@ -91,8 +91,8 @@ This decomposes the $d$-dimensional problem
 into multiple one-dimensional problems
 keyed by spatial start points.
 
-\item \textbf{Apriori pruning via singleton interval map intersection}:
-Dense regions of each item are maintained
+\item \textbf{Apriori pruning via $(k{-}1)$-subset interval map intersection}:
+Dense regions from the previous level are maintained
 as temporal interval sequences per spatial start point.
 For candidate patterns, these are intersected
 to form candidate intervals.

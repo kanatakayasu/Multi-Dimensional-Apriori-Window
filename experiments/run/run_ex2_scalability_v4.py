@@ -28,9 +28,9 @@ import numpy as np
 
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = SCRIPT_DIR.parent.parent
 BIN = REPO_ROOT / "apriori_window_md" / "target" / "release" / "md_pipeline"
-OUT_DIR = SCRIPT_DIR / "results" / "ex2_v4"
+OUT_DIR = REPO_ROOT / "experiments" / "results" / "ex2_v4"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
@@ -41,11 +41,11 @@ N_ITEMS = 20
 P_ITEM = 0.10
 N_DIMS = 2
 MAX_LENGTH = 3
-WINDOW = "25,5"
-W0, W1 = 25, 5
+WINDOW = "24,4"
+W0, W1 = 24, 4
 
 CHUNK_SIZE = 1_000_000
-RUN_TIMEOUT = 6 * 3600  # 6 時間
+RUN_TIMEOUT = 1000  # 1000秒（論文のタイムアウト基準に合わせる）
 
 # ---------------------------------------------------------------------------
 # Part A パラメータ

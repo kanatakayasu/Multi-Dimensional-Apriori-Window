@@ -8,7 +8,7 @@ to arbitrary $d$-dimensional grids.
 Through three techniques---one-dimensional multiset reduction
 per fixed spatial start point,
 duplicate-aware $t$-axis stride,
-and singleton interval map intersection pruning---the method
+and $(k{-}1)$-subset interval map intersection pruning---the method
 exactly enumerates all dense patterns
 together with their arbitrarily-shaped dense regions.
 
@@ -19,7 +19,7 @@ while existing methods achieved at most
 F1\,$=0.917$ and Jaccard\,$=0.190$;
 (2)~linear scaling was confirmed
 for $N = 10^3$--$10^8$,
-processing $10^8$ transactions within 10 minutes;
+processing $10^8$ transactions within 12 minutes;
 (3)~on $d{=}3$--$4$ real-world data from crime, complaints,
 and earthquake domains,
 the method yielded interpretable insights

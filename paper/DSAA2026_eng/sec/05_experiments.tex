@@ -64,9 +64,6 @@ how closely each method approximates the exact sliding-window solution.
 \paragraph{Proposed method parameters.}
 Common across all shapes: $W = (20, 5)$, $\theta = 30$.
 
-\paragraph{Results.}
-Fig.~\ref{fig:ex1} shows scores averaged over 3 seeds per shape.
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig/fig_ex1_heatmap.pdf}
@@ -80,6 +77,7 @@ Fig.~\ref{fig:ex1} shows scores averaged over 3 seeds per shape.
 \end{figure}
 
 \paragraph{Analysis.}
+Fig.~\ref{fig:ex1} shows scores averaged over 3 seeds per shape.
 \emph{EX-1-1 (Pattern detection F1).}
 Colocation performs worst on Shape~D (expanding):
 during the expansion phase, the global PI computation is diluted
@@ -146,24 +144,23 @@ yield $4 \times 4 = 16$ configurations.
 $N = T \times S$ ranges from $10^3$ to $10^9$;
 same-$N$ configurations with differing $T/S$ ratios isolate each axis's effect.
 
-\paragraph{Results.}
-Table~\ref{tab:ex2_grid} shows the execution times.
-
 \paragraph{Analysis.}
-At $N = 10^3$, 0.009 seconds; at $N = 10^8$, 587--643 seconds:
-for a $10^5$-fold increase in $N$,
-execution time increases only by a factor of approximately $6.5 \times 10^4$.
+Table~\ref{tab:ex2_grid} shows the execution times.
+At $N = 10^6$, 4.1--5.0 seconds; at $N = 10^8$, 746--968 seconds:
+for a $10^2$-fold increase in $N$,
+execution time increases by a factor of approximately $150$--$190$,
+confirming approximately linear scaling.
 $N = 10^9$ did not complete within 1{,}000 seconds (timeout).
 
 Even at the same $N$, the $T/S$ ratio causes differences:
-at $N = 10^7$, $T{=}100{,}000,\, S{=}100$ takes 53.1\,s
-while $T{=}1{,}000,\, S{=}10{,}000$ takes 64.9\,s (1.22$\times$).
+at $N = 10^7$, $T{=}100{,}000,\, S{=}100$ takes 48.5\,s
+while $T{=}1{,}000,\, S{=}10{,}000$ takes 55.6\,s (1.15$\times$).
 Larger $T$ enables more effective gap-skipping via the $t$-axis stride
 (Lemma~\ref{lem:stride}),
 while larger $S$ increases the number of spatial start points.
 
 Overall, execution time scales approximately linearly with $N$,
-and $10^8$ transactions can be processed within 10 minutes.
+and $10^8$ transactions can be processed within about 12 minutes.
 
 \begin{table}[t]
 \centering
@@ -177,10 +174,10 @@ and $10^8$ transactions can be processed within 10 minutes.
 \toprule
 $T \backslash S$ & 10 & 100 & 1{,}000 & 10{,}000 \\
 \midrule
-      100 & 0.009 &  0.059 &  0.655 &  7.18 \\
-  1{,}000 &  0.042 &  0.470 &  5.62 &  64.9 \\
- 10{,}000 &  0.403 &  4.79 &  57.5 &  643 \\
-100{,}000 &  4.16 &  53.1 &  587 &     $>$1000 \\
+      100 & 0.011 &  0.043 &  0.456 &  4.99 \\
+  1{,}000 &  0.041 &  0.440 &  5.01 &  55.6 \\
+ 10{,}000 &  0.390 &  4.48 &  51.4 &  968 \\
+100{,}000 &  4.09 &  48.5 &  746 &     $>$1000 \\
 \bottomrule
 \end{tabular}
 \end{table}
