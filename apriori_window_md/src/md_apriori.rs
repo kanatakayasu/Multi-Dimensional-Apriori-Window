@@ -1,20 +1,19 @@
-//! 多次元 Apriori-Window
+//! Multi-Dimensional Apriori-Window.
 //!
-//! 固定した空間開始点ごとに、その空間窓へ入る出現を「時刻の多重集合」へ潰し、
-//! 1D の dense-interval 計算をそのまま適用する。
-//! 出力は dense cell 集合ではなく、
-//! `spatial_start -> [time_interval, ...]` の区間表現で保持する。
+//! For each fixed spatial origin, occurrences inside the spatial window are collapsed
+//! into a temporal multiset and the 1-D dense-interval solver is applied directly.
+//! Output is stored as `spatial_start -> [time_interval, ...]` rather than dense cells.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use itertools::Itertools;
-use new_apriori_window::{
+use apriori_window_1d::{
     compute_dense_intervals_multiset, compute_dense_intervals_with_candidates_multiset,
     intersect_interval_lists, lower_bound, upper_bound,
 };
 
 // ---------------------------------------------------------------------------
-// Apriori 候補生成・枝刈り
+// Apriori candidate generation and pruning
 // ---------------------------------------------------------------------------
 
 pub fn generate_candidates(prev_frequents: &[Vec<i64>], k: usize) -> Vec<Vec<i64>> {
@@ -60,7 +59,7 @@ pub fn prune_candidates(
 }
 
 // ---------------------------------------------------------------------------
-// パラメータ・入力型
+// Parameters and input types
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone)]
@@ -85,13 +84,13 @@ pub struct MdNDParams {
     pub window_bins: Vec<usize>,
     pub threshold: usize,
     pub max_length: Option<usize>,
-    /// 互換性のため保持。interval-based 実装では未使用。
+    /// Retained for compatibility; unused in the interval-based implementation.
     pub use_prefix_sum: bool,
-    /// 互換性のため保持。interval-based 実装では未使用。
+    /// Retained for compatibility; unused in the interval-based implementation.
     pub use_binsearch: bool,
-    /// false のときは t 軸を素朴走査する。
+    /// When false, uses naive t-axis scan instead of stride-based solver.
     pub use_t_stride: bool,
-    /// false のときは singleton 区間交差による候補区間制限を省略する。
+    /// When false, skips (k-1)-subset interval map candidate pruning.
     pub use_apriori_prune: bool,
 }
 
@@ -129,7 +128,7 @@ pub type DenseRegionND = DenseRegion;
 type IntervalMapND = BTreeMap<Vec<usize>, Vec<(i64, i64)>>;
 
 // ---------------------------------------------------------------------------
-// 離散化
+// Discretization
 // ---------------------------------------------------------------------------
 
 pub fn discretize(
@@ -185,7 +184,7 @@ pub fn discretize_nd(
 }
 
 // ---------------------------------------------------------------------------
-// 区間出力ヘルパー
+// Interval output helpers
 // ---------------------------------------------------------------------------
 
 fn effective_window_size(wt_bins: usize) -> i64 {
@@ -279,7 +278,7 @@ fn for_each_product(
 }
 
 // ---------------------------------------------------------------------------
-// 固定空間窓ごとの時刻多重集合
+// Temporal multiset per spatial window
 // ---------------------------------------------------------------------------
 
 fn build_spatial_t_events_with_predicate_nd(
@@ -382,7 +381,7 @@ fn build_spatial_t_events_for_pattern_restricted_nd(
 }
 
 // ---------------------------------------------------------------------------
-// t 軸区間計算
+// t-axis interval computation
 // ---------------------------------------------------------------------------
 
 fn collapse_dense_lefts(
@@ -486,7 +485,7 @@ fn compute_interval_map_with_candidates_nd(
 }
 
 // ---------------------------------------------------------------------------
-// メイン
+// Main
 // ---------------------------------------------------------------------------
 
 pub fn find_dense_itemsets_3d(
@@ -621,7 +620,7 @@ pub fn find_dense_itemsets_nd(
 }
 
 // ---------------------------------------------------------------------------
-// テスト
+// Tests
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]

@@ -13,7 +13,7 @@ path = "src/bin/md_pipeline.rs"
 
 [dependencies]
 itertools = "0.14"
-new_apriori_window = { path = "../apriori_window_1d" }
+apriori_window_1d = { path = "../apriori_window_1d" }
 rand = "0.8"
 rand_distr = "0.4"
 rayon = "1.11"

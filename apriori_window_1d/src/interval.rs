@@ -1,7 +1,7 @@
 use crate::util::{lower_bound, upper_bound};
 
 // ---------------------------------------------------------------------------
-// 区間管理ヘルパー
+// Interval management helpers
 // ---------------------------------------------------------------------------
 
 pub fn find_covering_interval(intervals: &[(i64, i64)], point: i64) -> Option<(i64, i64)> {
@@ -37,7 +37,7 @@ pub fn insert_and_merge_interval(intervals: &mut Vec<(i64, i64)>, new_interval: 
 }
 
 // ---------------------------------------------------------------------------
-// 密集区間計算
+// Dense interval computation
 // ---------------------------------------------------------------------------
 
 fn earliest_dense_left(
@@ -101,7 +101,7 @@ pub fn compute_dense_intervals(
             continue;
         }
 
-        // count >= threshold: 密集ウィンドウ。
+        // count >= threshold: dense window.
         if !in_dense {
             in_dense = true;
             start = Some(l);

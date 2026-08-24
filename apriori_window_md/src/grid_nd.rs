@@ -1,9 +1,4 @@
-//! d 次元グリッド・接頭辞和・連結成分
-//!
-//! # 設計
-//! - `GridND`: フラット配列による d 次元グリッド（row-major, strides[0]=1）
-//! - `PrefixSumND`: 各次元 +1 パディングの接頭辞和
-//! - `connected_components_nd`: 2d-近傍（各次元 ±1）Union-Find
+//! d-dimensional grid, prefix sum, and connected components.
 
 use std::collections::HashMap;
 
@@ -11,7 +6,7 @@ use std::collections::HashMap;
 // GridND
 // ---------------------------------------------------------------------------
 
-/// フラット配列による d 次元グリッド
+/// d-dimensional grid backed by a flat array (row-major, strides[0]=1).
 #[derive(Debug, Clone)]
 pub struct GridND {
     pub data: Vec<u32>,
@@ -20,7 +15,7 @@ pub struct GridND {
 }
 
 impl GridND {
-    /// 全ゼロで初期化。dims[i] は第 i 次元のサイズ。
+    /// Initialize with all zeros. dims[i] is the size of dimension i.
     pub fn new(dims: Vec<usize>) -> Self {
         let total: usize = dims.iter().product();
         let strides = compute_strides(&dims);
@@ -31,7 +26,7 @@ impl GridND {
         }
     }
 
-    /// フラットインデックス計算（row-major: strides[0]=1, strides[i]=∏dims[0..i]）
+    /// Compute flat index (row-major).
     #[inline]
     pub fn flat_idx(&self, coords: &[usize]) -> usize {
         debug_assert_eq!(coords.len(), self.dims.len());
@@ -53,13 +48,13 @@ impl GridND {
         self.data[i] += v;
     }
 
-    /// 全セルの座標をイテレートする
+    /// Iterate over all cell coordinates.
     pub fn iter_coords(&self) -> impl Iterator<Item = Vec<usize>> + '_ {
         iter_coords_impl(&self.dims)
     }
 }
 
-/// strides 計算: strides[0]=1, strides[i]=strides[i-1]*dims[i-1]
+/// Compute strides: strides[0]=1, strides[i]=strides[i-1]*dims[i-1].
 fn compute_strides(dims: &[usize]) -> Vec<usize> {
     let d = dims.len();
     let mut strides = vec![1usize; d];
@@ -69,14 +64,14 @@ fn compute_strides(dims: &[usize]) -> Vec<usize> {
     strides
 }
 
-/// 全座標をイテレートするジェネレータ（row-major 順）
+/// Iterator over all coordinates in row-major order.
 fn iter_coords_impl(dims: &[usize]) -> impl Iterator<Item = Vec<usize>> + '_ {
     let total: usize = dims.iter().product();
     let strides = compute_strides(dims);
     (0..total).map(move |flat| {
         let mut coords = vec![0usize; dims.len()];
         let mut rem = flat;
-        // strides は昇順なので逆順にデコード
+        // Decode in reverse order (strides are ascending).
         for i in (0..dims.len()).rev() {
             coords[i] = rem / strides[i];
             rem %= strides[i];
@@ -89,7 +84,7 @@ fn iter_coords_impl(dims: &[usize]) -> impl Iterator<Item = Vec<usize>> + '_ {
 // PrefixSumND
 // ---------------------------------------------------------------------------
 
-/// d 次元接頭辞和（各次元 +1 パディング）
+/// d-dimensional prefix sum (+1 padding per axis).
 #[derive(Debug, Clone)]
 pub struct PrefixSumND {
     pub data: Vec<u64>,
@@ -113,11 +108,7 @@ impl PrefixSumND {
     }
 }
 
-/// d 次元接頭辞和構築 O(∏dims_i)
-///
-/// 構築手順:
-/// 1. ps[coords[i]+1 for all i] = grid[coords] を全セルにセット
-/// 2. 各次元 d について: d 方向に累積和をとる
+/// Build d-dimensional prefix sum in O(∏dims_i).
 pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
     let d = grid.dims.len();
     let ps_dims: Vec<usize> = grid.dims.iter().map(|&s| s + 1).collect();
@@ -125,7 +116,7 @@ pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
     let total: usize = ps_dims.iter().product();
     let mut data = vec![0u64; total];
 
-    // Step 1: グリッド値をシフトして配置
+    // Step 1: place shifted grid values
     for coords in grid.iter_coords() {
         let v = grid.get(&coords) as u64;
         if v == 0 {
@@ -140,14 +131,11 @@ pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
         data[idx] = v;
     }
 
-    // Step 2: 各次元について累積和
+    // Step 2: cumulative sum along each dimension
     for dim in 0..d {
-        // dim 次元以外は全座標をイテレート、dim 方向に 1..ps_dims[dim] を累積
-        // 補助関数: dim_stride = ps_strides[dim]
         let dim_stride = ps_strides[dim];
         let dim_size = ps_dims[dim];
 
-        // dim 次元を除いた全座標をイテレート
         let other_dims: Vec<usize> = ps_dims
             .iter()
             .enumerate()
@@ -165,7 +153,7 @@ pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
         let other_strides_local = compute_strides(&other_dims);
 
         for flat_other in 0..other_total {
-            // flat_other → 他次元の座標
+            // Decode flat_other into per-axis coordinates.
             let mut base_idx = 0usize;
             let mut rem = flat_other;
             for i in (0..other_dims.len()).rev() {
@@ -174,7 +162,7 @@ pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
                 base_idx += c * other_strides[i];
             }
 
-            // dim 方向に累積
+            // Accumulate along dim axis.
             for d_pos in 1..dim_size {
                 let cur = base_idx + d_pos * dim_stride;
                 let prev = base_idx + (d_pos - 1) * dim_stride;
@@ -190,17 +178,12 @@ pub fn build_prefix_sum_nd(grid: &GridND) -> PrefixSumND {
     }
 }
 
-/// 範囲 [starts[i], starts[i]+windows[i]) の合計 O(2^d)
-///
-/// 包除原理: mask ∈ 0..2^d を列挙
-/// bit i が立っていれば upper[i] = starts[i]+windows[i]、なければ lower[i] = starts[i]
-/// 符号 = (-1)^(d - popcount(mask)) = (-1)^(ゼロビット数)
+/// Sum over [starts[i], starts[i]+windows[i]) via inclusion-exclusion in O(2^d).
 pub fn query_range_nd(ps: &PrefixSumND, starts: &[usize], windows: &[usize]) -> u32 {
     let d = ps.dims.len();
     debug_assert_eq!(starts.len(), d);
     debug_assert_eq!(windows.len(), d);
 
-    // 境界クランプ
     let lowers: Vec<usize> = starts.to_vec();
     let uppers: Vec<usize> = starts
         .iter()
@@ -209,7 +192,6 @@ pub fn query_range_nd(ps: &PrefixSumND, starts: &[usize], windows: &[usize]) -> 
         .map(|((s, w), &pd)| (s + w).min(pd - 1))
         .collect();
 
-    // 有効性チェック
     for i in 0..d {
         if lowers[i] >= uppers[i] {
             return 0;
@@ -241,13 +223,12 @@ pub fn query_range_nd(ps: &PrefixSumND, starts: &[usize], windows: &[usize]) -> 
     sum.max(0) as u32
 }
 
-/// サポートサーフェス計算（全グリッド点）O(∏dims_i)
+/// Compute support surface (all grid points) via prefix sum in O(∏dims_i).
 pub fn compute_support_surface_nd(ps: &PrefixSumND, windows: &[usize]) -> GridND {
     let grid_dims: Vec<usize> = ps.dims.iter().map(|&s| s - 1).collect();
     let mut surface = GridND::new(grid_dims.clone());
 
     for coords in surface.iter_coords().collect::<Vec<_>>() {
-        // starts = coords（グリッド座標）
         let starts: Vec<usize> = coords.clone();
         let v = query_range_nd(ps, &starts, windows);
         let idx = surface.flat_idx(&coords);
@@ -257,10 +238,10 @@ pub fn compute_support_surface_nd(ps: &PrefixSumND, windows: &[usize]) -> GridND
 }
 
 // ---------------------------------------------------------------------------
-// バイナリサーチ版サポート計算
+// Binary-search support computation
 // ---------------------------------------------------------------------------
 
-/// 空間セル（次元 1..d）→ ソート済み時刻ビンリスト のマップを走査する内部ヘルパー
+/// Internal helper: iterate over spatial cells in ranges.
 fn iter_spatial_cells(ranges: &[std::ops::Range<usize>], f: &mut impl FnMut(&[usize])) {
     if ranges.iter().any(|r| r.is_empty()) {
         return;
@@ -289,10 +270,9 @@ fn iter_spatial_cells(ranges: &[std::ops::Range<usize>], f: &mut impl FnMut(&[us
     }
 }
 
-/// ウィンドウ開始点 `s` に対するバイナリサーチ版サポート計算
+/// Binary-search support for window origin `s` in O(∏_{k≥1} W_k × log N).
 ///
-/// - `cell_time_map`: 空間座標（次元 1..d、長さ d-1）→ ソート済み時刻ビン
-/// - 計算量: O(∏_{k≥1} W_k × log N)
+/// `cell_time_map`: spatial coords (dims 1..d) → sorted time bins.
 pub fn query_binsearch_nd(
     cell_time_map: &HashMap<Vec<usize>, Vec<usize>>,
     s: &[usize],
@@ -306,7 +286,7 @@ pub fn query_binsearch_nd(
     let mut count = 0u32;
 
     if d == 1 {
-        // 空間次元なし：キーは空ベクタ
+        // No spatial dimensions: key is empty vec.
         if let Some(times) = cell_time_map.get(&vec![]) {
             let lo = times.partition_point(|&t| t < t_start);
             let hi = times.partition_point(|&t| t < t_end);
@@ -328,7 +308,7 @@ pub fn query_binsearch_nd(
     count
 }
 
-/// バイナリサーチ版サポートサーフェス計算（全グリッド点）O(G × ∏_{k≥1} W_k × log N)
+/// Compute support surface via binary search in O(G × ∏_{k≥1} W_k × log N).
 pub fn compute_support_surface_binsearch_nd(
     cell_time_map: &HashMap<Vec<usize>, Vec<usize>>,
     dims: &[usize],
@@ -343,7 +323,7 @@ pub fn compute_support_surface_binsearch_nd(
     surface
 }
 
-/// 密集セル抽出（support >= theta）
+/// Extract cells where support >= theta.
 pub fn find_dense_cells_nd(surface: &GridND, theta: u32) -> Vec<Vec<usize>> {
     surface
         .iter_coords()
@@ -352,7 +332,7 @@ pub fn find_dense_cells_nd(surface: &GridND, theta: u32) -> Vec<Vec<usize>> {
 }
 
 // ---------------------------------------------------------------------------
-// 2d-近傍 Union-Find 連結成分
+// Union-Find connected components (2d-neighborhood, ±1 per axis)
 // ---------------------------------------------------------------------------
 
 fn uf_find(parent: &mut Vec<usize>, x: usize) -> usize {
@@ -378,7 +358,7 @@ fn uf_union(parent: &mut Vec<usize>, rank: &mut Vec<u8>, a: usize, b: usize) {
     }
 }
 
-/// 2d-近傍（各次元 ±1）Union-Find 連結成分
+/// Connected components of dense cells under ±1 adjacency in each dimension.
 pub fn connected_components_nd(dense_cells: &[Vec<usize>], dims: &[usize]) -> Vec<Vec<Vec<usize>>> {
     if dense_cells.is_empty() {
         return Vec::new();
@@ -386,7 +366,6 @@ pub fn connected_components_nd(dense_cells: &[Vec<usize>], dims: &[usize]) -> Ve
 
     let d = dims.len();
 
-    // セル座標 → インデックスの逆引きマップ（フラットキー使用）
     let strides = compute_strides(dims);
     let cell_to_flat = |coords: &Vec<usize>| -> usize {
         coords.iter().zip(strides.iter()).map(|(c, s)| c * s).sum()
@@ -403,7 +382,6 @@ pub fn connected_components_nd(dense_cells: &[Vec<usize>], dims: &[usize]) -> Ve
     let mut rank = vec![0u8; n];
 
     for (i, cell) in dense_cells.iter().enumerate() {
-        // 各次元について ±1 の近傍をチェック
         for dim in 0..d {
             for delta in [-1i64, 1i64] {
                 let new_pos = cell[dim] as i64 + delta;
@@ -420,7 +398,6 @@ pub fn connected_components_nd(dense_cells: &[Vec<usize>], dims: &[usize]) -> Ve
         }
     }
 
-    // グループ化
     let mut groups: HashMap<usize, Vec<Vec<usize>>> = HashMap::new();
     for (i, cell) in dense_cells.iter().enumerate() {
         let root = uf_find(&mut parent, i);
@@ -431,18 +408,18 @@ pub fn connected_components_nd(dense_cells: &[Vec<usize>], dims: &[usize]) -> Ve
 }
 
 // ---------------------------------------------------------------------------
-// テスト
+// Tests
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // ----- GridND 基本テスト -----
+    // ----- GridND basics -----
 
     #[test]
     fn test_grid_nd_flat_idx_2d() {
-        // 2×3 グリッド: strides = [1, 2]
+        // 2×3 grid: strides = [1, 2]
         let g = GridND::new(vec![2, 3]);
         assert_eq!(g.flat_idx(&[0, 0]), 0);
         assert_eq!(g.flat_idx(&[1, 0]), 1);
@@ -458,7 +435,7 @@ mod tests {
         assert_eq!(g.get(&[0, 0, 0]), 0);
     }
 
-    // ----- 接頭辞和 2×2 正確性 -----
+    // ----- PrefixSumND 2×2 correctness -----
 
     #[test]
     fn test_prefix_sum_nd_2x2() {
@@ -469,19 +446,15 @@ mod tests {
             }
         }
         let ps = build_prefix_sum_nd(&g);
-        // 全セル = 4
-        assert_eq!(query_range_nd(&ps, &[0, 0], &[2, 2]), 4);
-        // 左上 1セル
-        assert_eq!(query_range_nd(&ps, &[0, 0], &[1, 1]), 1);
-        // 右下 1セル
-        assert_eq!(query_range_nd(&ps, &[1, 1], &[1, 1]), 1);
+        assert_eq!(query_range_nd(&ps, &[0, 0], &[2, 2]), 4); // all cells
+        assert_eq!(query_range_nd(&ps, &[0, 0], &[1, 1]), 1); // top-left
+        assert_eq!(query_range_nd(&ps, &[1, 1], &[1, 1]), 1); // bottom-right
     }
 
-    // ----- d=2（1D タイムライン）ブルートフォース比較 -----
+    // ----- d=2 brute-force comparison -----
 
     #[test]
     fn test_prefix_sum_nd_1d_brute_force() {
-        // 次元 d=1 として扱う（dims=[N]）
         let n = 10usize;
         let values: Vec<u32> = (0..n).map(|i| (i % 3) as u32 + 1).collect();
         let mut g = GridND::new(vec![n]);
@@ -490,7 +463,6 @@ mod tests {
         }
         let ps = build_prefix_sum_nd(&g);
 
-        // 全 [s, s+w) 区間についてブルートフォースと比較
         for s in 0..n {
             for w in 1..=(n - s) {
                 let expected: u32 = values[s..s + w].iter().sum();
@@ -504,56 +476,7 @@ mod tests {
         }
     }
 
-    // ----- d=3 で grid3d との等価性 -----
-
-    #[test]
-    fn test_prefix_sum_nd_3d_vs_grid3d() {
-        use crate::grid3d::{build_prefix_sum, query_range, Grid3D};
-
-        let t = 4usize;
-        let x = 3usize;
-        let y = 3usize;
-
-        // 同じデータで両方を構築
-        let mut g3 = Grid3D::new(t, x, y);
-        let mut gn = GridND::new(vec![t, x, y]);
-
-        // 疎なデータを注入
-        let points = [(0, 0, 0, 5u32), (1, 2, 1, 3), (3, 0, 2, 7), (2, 1, 0, 1)];
-        for (ti, xi, yi, v) in points {
-            g3.add(ti, xi, yi, v);
-            gn.add(&[ti, xi, yi], v);
-        }
-
-        let ps3 = build_prefix_sum(&g3);
-        let psn = build_prefix_sum_nd(&gn);
-
-        // 全ウィンドウで比較
-        let wt_list = [1, 2, 3];
-        let wx_list = [1, 2];
-        let wy_list = [1, 2];
-        for &wt in &wt_list {
-            for &wx in &wx_list {
-                for &wy in &wy_list {
-                    for ti in 0..t {
-                        for xi in 0..x {
-                            for yi in 0..y {
-                                let v3 = query_range(&ps3, ti, xi, yi, wt, wx, wy);
-                                let vn = query_range_nd(&psn, &[ti, xi, yi], &[wt, wx, wy]);
-                                assert_eq!(
-                                    v3, vn,
-                                    "3D vs ND mismatch at ({},{},{}) w=({},{},{}): {} vs {}",
-                                    ti, xi, yi, wt, wx, wy, v3, vn
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // ----- connected_components_nd テスト -----
+    // ----- connected_components_nd -----
 
     #[test]
     fn test_connected_components_nd_single() {
@@ -565,7 +488,7 @@ mod tests {
 
     #[test]
     fn test_connected_components_nd_two_separate() {
-        // (0,0) と (2,2) は隣接しない → 2 成分
+        // (0,0) and (2,2) are not adjacent → 2 components
         let cells = vec![vec![0usize, 0], vec![2, 2]];
         let comps = connected_components_nd(&cells, &[3, 3]);
         assert_eq!(comps.len(), 2);
@@ -573,7 +496,7 @@ mod tests {
 
     #[test]
     fn test_connected_components_nd_chain() {
-        // (0,0)-(1,0)-(2,0) は連鎖 → 1 成分
+        // (0,0)-(1,0)-(2,0) form a chain → 1 component
         let cells = vec![vec![0usize, 0], vec![1, 0], vec![2, 0]];
         let comps = connected_components_nd(&cells, &[3, 3]);
         assert_eq!(comps.len(), 1);
@@ -582,7 +505,7 @@ mod tests {
 
     #[test]
     fn test_connected_components_nd_two_components() {
-        // 2 クラスタ: [(0,0),(1,0)] と [(3,3),(3,4)]
+        // 2 clusters: [(0,0),(1,0)] and [(3,3),(3,4)]
         let cells = vec![vec![0usize, 0], vec![1, 0], vec![3, 3], vec![3, 4]];
         let comps = connected_components_nd(&cells, &[5, 5]);
         assert_eq!(comps.len(), 2);
@@ -596,7 +519,7 @@ mod tests {
 
     #[test]
     fn test_connected_components_nd_3d() {
-        // 3D 空間で連結確認: (0,0,0)-(1,0,0)-(1,1,0) → 1成分
+        // 3D: (0,0,0)-(1,0,0)-(1,1,0) → 1 component
         let cells = vec![vec![0, 0, 0usize], vec![1, 0, 0], vec![1, 1, 0]];
         let comps = connected_components_nd(&cells, &[3, 3, 3]);
         assert_eq!(comps.len(), 1);
@@ -610,7 +533,7 @@ mod tests {
         assert!(comps.is_empty());
     }
 
-    // ----- find_dense_cells_nd テスト -----
+    // ----- find_dense_cells_nd -----
 
     #[test]
     fn test_find_dense_cells_nd() {

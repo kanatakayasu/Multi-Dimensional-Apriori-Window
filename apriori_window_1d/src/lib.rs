@@ -1,7 +1,4 @@
-//! new_apriori_window — バスケット構造なしの Apriori 窓移動アルゴリズム
-//!
-//! 設計書: doc/requirements.md
-//! 正当性証明: doc/proof.md
+//! apriori_window_1d — 1-D sliding-window dense interval solver
 
 pub mod apriori;
 pub mod interval;

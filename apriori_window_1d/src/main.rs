@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use new_apriori_window::{
+use apriori_window_1d::{
     find_dense_itemsets, read_text_file_as_2d_vec_of_integers, write_output_csv,
 };
 use serde::Deserialize;

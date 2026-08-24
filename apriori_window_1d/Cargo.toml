@@ -1,14 +1,14 @@
 [package]
-name = "new_apriori_window"
+name = "apriori_window_1d"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "new_apriori_window"
+name = "apriori_window_1d"
 path = "src/lib.rs"
 
 [[bin]]
-name = "new_apriori_window"
+name = "apriori_window_1d"
 path = "src/main.rs"
 
 [dependencies]
