@@ -1,0 +1,228 @@
+{
+  "params": {
+    "W_T": 24,
+    "W_SP": 4,
+    "theta": 15,
+    "p_item": 0.1,
+    "seed": 42,
+    "max_length": 3
+  },
+  "exp_a": [
+    {
+      "elapsed_s": 0.046,
+      "peak_rss_mb": 4.9,
+      "n_patterns": 20,
+      "n_txn": 10000,
+      "gen_s": 0.05,
+      "T": 100,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 0.458,
+      "peak_rss_mb": 26.1,
+      "n_patterns": 20,
+      "n_txn": 100000,
+      "gen_s": 0.34,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 4.737,
+      "peak_rss_mb": 219.4,
+      "n_patterns": 20,
+      "n_txn": 1000000,
+      "gen_s": 3.37,
+      "T": 10000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 49.498,
+      "peak_rss_mb": 2135.3,
+      "n_patterns": 20,
+      "n_txn": 10000000,
+      "gen_s": 34.09,
+      "T": 100000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 517.493,
+      "peak_rss_mb": 21292.6,
+      "n_patterns": 20,
+      "n_txn": 100000000,
+      "gen_s": 334.62,
+      "T": 1000000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    }
+  ],
+  "exp_b": [
+    {
+      "elapsed_s": 0.042,
+      "peak_rss_mb": 4.7,
+      "n_patterns": 20,
+      "n_txn": 10000,
+      "gen_s": 0.03,
+      "T": 1000,
+      "S": 10,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 0.424,
+      "peak_rss_mb": 24.4,
+      "n_patterns": 20,
+      "n_txn": 100000,
+      "gen_s": 0.34,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 5.158,
+      "peak_rss_mb": 222.2,
+      "n_patterns": 20,
+      "n_txn": 1000000,
+      "gen_s": 3.32,
+      "T": 1000,
+      "S": 1000,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 59.791,
+      "peak_rss_mb": 2184.5,
+      "n_patterns": 20,
+      "n_txn": 10000000,
+      "gen_s": 33.9,
+      "T": 1000,
+      "S": 10000,
+      "d": 2,
+      "n_items": 20
+    }
+  ],
+  "exp_c": [
+    {
+      "elapsed_s": 0.447,
+      "peak_rss_mb": 26.1,
+      "n_patterns": 20,
+      "n_txn": 100000,
+      "gen_s": 0.34,
+      "d": 2,
+      "dims": [
+        1000,
+        100
+      ],
+      "W_sp": 5,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 0.818,
+      "peak_rss_mb": 30.2,
+      "n_patterns": 36,
+      "n_txn": 100000,
+      "gen_s": 0.36,
+      "d": 3,
+      "dims": [
+        1000,
+        10,
+        10
+      ],
+      "W_sp": 25,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 2.644,
+      "peak_rss_mb": 35.0,
+      "n_patterns": 210,
+      "n_txn": 100000,
+      "gen_s": 0.38,
+      "d": 4,
+      "dims": [
+        1000,
+        5,
+        5,
+        4
+      ],
+      "W_sp": 125,
+      "n_items": 20
+    }
+  ],
+  "exp_d": [
+    {
+      "elapsed_s": 0.16,
+      "peak_rss_mb": 25.7,
+      "n_patterns": 10,
+      "n_txn": 100000,
+      "gen_s": 0.24,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 10
+    },
+    {
+      "elapsed_s": 0.438,
+      "peak_rss_mb": 24.5,
+      "n_patterns": 20,
+      "n_txn": 100000,
+      "gen_s": 0.34,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 20
+    },
+    {
+      "elapsed_s": 1.507,
+      "peak_rss_mb": 30.9,
+      "n_patterns": 40,
+      "n_txn": 100000,
+      "gen_s": 0.53,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 40
+    },
+    {
+      "elapsed_s": 3.491,
+      "peak_rss_mb": 36.2,
+      "n_patterns": 60,
+      "n_txn": 100000,
+      "gen_s": 0.74,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 60
+    },
+    {
+      "elapsed_s": 6.789,
+      "peak_rss_mb": 44.6,
+      "n_patterns": 80,
+      "n_txn": 100000,
+      "gen_s": 0.94,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 80
+    },
+    {
+      "elapsed_s": 9.924,
+      "peak_rss_mb": 50.1,
+      "n_patterns": 100,
+      "n_txn": 100000,
+      "gen_s": 1.14,
+      "T": 1000,
+      "S": 100,
+      "d": 2,
+      "n_items": 100
+    }
+  ]
+}

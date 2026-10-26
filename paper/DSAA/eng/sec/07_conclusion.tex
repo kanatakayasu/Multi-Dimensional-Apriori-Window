@@ -1,0 +1,41 @@
+% ==============================================================
+\section{Conclusion}\label{sec:conclusion}
+% ==============================================================
+
+This paper proposed \textbf{Multi-Dimensional Apriori-Window},
+which extends Apriori-Window~\cite{aprioriwindow}
+to arbitrary $d$-dimensional grids.
+Through three techniques---one-dimensional multiset reduction
+per fixed spatial start point,
+duplicate-aware $t$-axis stride,
+and $(k{-}1)$-subset interval map intersection pruning---the method
+exactly enumerates all dense patterns
+together with their arbitrarily-shaped dense regions.
+
+Experiments demonstrated that:
+(1)~on synthetic data with four embedding shapes,
+the proposed method outputs the exact solution,
+while existing methods achieved at most
+F1\,$=0.917$ and Jaccard\,$=0.190$;
+(2)~the proposed method demonstrated linear scaling
+for $N = 10^4$--$10^8$,
+processing $10^8$ transactions within 9 minutes;
+(3)~on $d{=}3$--$4$ real-world data from crime, complaints,
+and earthquake domains,
+the method yielded interpretable insights
+consistent with domain knowledge,
+such as compound crime hotspots
+and depth-stratified seismic clusters.
+
+\paragraph{Limitations.}
+\begin{itemize}
+    \item \textbf{Grid discretization:} Results depend on the choice of bin width and $\bm{W}$.
+    \item \textbf{Scalability in high dimensions:} Multiset construction costs $O(N \cdot W_{\mathrm{sp}})$, which becomes expensive as $d$ or $W_{\mathrm{sp}}$ increases.
+    \item \textbf{No causal explanation:} The method detects and describes dense patterns and regions, but does not explain their causes or associations with external events.
+\end{itemize}
+
+\paragraph{Future work.}
+\begin{itemize}
+    \item \textbf{Adaptive parameter selection:} Automatically determine $\bm{W}$ and $\theta$ from local data statistics, such as density distributions and spatial autocorrelation.
+    \item \textbf{Further acceleration:} Reduce redundant multiset construction using prefix-sum-based $O(1)$ window aggregation and incremental updates along spatial axes.
+\end{itemize}

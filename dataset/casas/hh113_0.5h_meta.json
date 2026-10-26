@@ -1,0 +1,23 @@
+{
+  "house": "hh113",
+  "window_hours": 0.5,
+  "min_events": 1,
+  "source_csv": "/Users/kanata/Documents/GitHub/apriori-window-C/dataset/casas/labeled_data/labeled/hh113.csv",
+  "date_range": {
+    "start": "2011-06-15 01:00:00",
+    "end": "2012-11-05 10:30:00"
+  },
+  "total_transactions": 24451,
+  "non_empty_transactions": 14356,
+  "empty_transactions": 10095,
+  "unique_sensors": 7,
+  "sensor_id_map": {
+    "Bathroom": 1,
+    "Bedroom": 2,
+    "DiningRoom": 3,
+    "Kitchen": 4,
+    "LivingRoom": 5,
+    "OutsideDoor": 6,
+    "WorkArea": 7
+  }
+}

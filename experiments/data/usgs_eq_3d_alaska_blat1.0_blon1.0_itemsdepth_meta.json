@@ -1,0 +1,35 @@
+{
+  "source": "USGS Earthquake Catalog (ComCat), M2.5+, 2000-2020",
+  "region": "alaska",
+  "bbox": {
+    "lat_min": 54.0,
+    "lat_max": 72.0,
+    "lon_min": -168.0,
+    "lon_max": -140.0
+  },
+  "dims": 3,
+  "bin_lat_deg": 1.0,
+  "bin_lon_deg": 1.0,
+  "bin_depth_km": null,
+  "base_date": "2000-01-01",
+  "n_valid_events": 44640,
+  "n_skipped": 501025,
+  "n_cells": 24179,
+  "n_lat_bins": 18,
+  "n_lon_bins": 28,
+  "n_dep_bins": null,
+  "week_range": [
+    0,
+    1095
+  ],
+  "n_weeks": 1096,
+  "avg_items_per_cell": 1.07,
+  "magnitude_bands": {
+    "1": "M2.5-3.0",
+    "2": "M3.0-4.0",
+    "3": "M4.0-5.0",
+    "4": "M5.0-6.0",
+    "5": "M6.0+"
+  },
+  "axes_note": "全軸が順序/比例尺度。t=時間（週）、x=緯度ビン（北増加）、y=経度ビン（東増加）。スライディングウィンドウの近傍が地理的・物理的近傍に対応。"
+}

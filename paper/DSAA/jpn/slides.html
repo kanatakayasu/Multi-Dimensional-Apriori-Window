@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Dimensional Apriori-Window — DSAA2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    background: #fff;
+    color: #111;
+  }
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide.active { display: flex; }
+
+  h1 { font-size: 2.4em; font-weight: 700; line-height: 1.4; margin-bottom: 24px; }
+  h2 { font-size: 1.9em; font-weight: 700; margin-bottom: 32px; border-bottom: 3px solid #111; padding-bottom: 12px; }
+  h3 { font-size: 1.3em; font-weight: 700; margin-bottom: 12px; }
+  p  { font-size: 1.25em; line-height: 1.8; margin-bottom: 16px; }
+  ul { font-size: 1.25em; line-height: 1.9; margin-left: 1.5em; margin-bottom: 16px; }
+  li { margin-bottom: 8px; }
+
+  .red { color: #d32f2f; font-weight: 700; }
+  .gray { color: #888; }
+  .small { font-size: 0.85em; color: #666; }
+  .center { text-align: center; }
+  .mt { margin-top: 32px; }
+  .mt-s { margin-top: 16px; }
+
+  /* title slide */
+  .title-slide { justify-content: center; align-items: center; text-align: center; }
+  .title-slide h1 { font-size: 2.2em; border: none; }
+  .title-slide .subtitle { font-size: 1.3em; color: #555; margin-top: 12px; }
+  .title-slide .author { font-size: 1.1em; color: #777; margin-top: 32px; }
+
+  /* comparison table */
+  table { border-collapse: collapse; font-size: 1.15em; margin: 20px auto; }
+  th, td { padding: 12px 24px; text-align: center; border-bottom: 1px solid #ccc; }
+  th { background: #f5f5f5; font-weight: 700; border-bottom: 2px solid #999; }
+  td.yes { color: #2e7d32; font-weight: 700; }
+  td.no  { color: #d32f2f; font-weight: 700; }
+
+  /* diagram boxes */
+  .diagram { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 24px 0; flex-wrap: wrap; }
+  .box {
+    border: 2px solid #111;
+    border-radius: 8px;
+    padding: 16px 28px;
+    font-size: 1.15em;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+  }
+  .box.highlight { border-color: #d32f2f; color: #d32f2f; }
+  .arrow { font-size: 1.8em; color: #888; }
+
+  /* window diagram */
+  .window-row { display: flex; align-items: center; gap: 0; margin: 16px 0; justify-content: center; }
+  .cell {
+    width: 52px; height: 52px;
+    border: 1px solid #aaa;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95em; font-weight: 600;
+  }
+  .cell.in-window { background: #e3f2fd; }
+  .cell.dense { background: #ffcdd2; }
+  .cell.empty { background: #fafafa; color: #bbb; }
+  .brace { font-size: 0.95em; margin-top: 6px; text-align: center; color: #d32f2f; font-weight: 600; }
+
+  /* progress bar */
+  .progress {
+    position: fixed; bottom: 0; left: 0; height: 4px;
+    background: #d32f2f; transition: width 0.3s;
+  }
+  .page-num {
+    position: fixed; bottom: 12px; right: 24px;
+    font-size: 0.9em; color: #aaa;
+  }
+
+  /* 2-col */
+  .two-col { display: flex; gap: 48px; align-items: flex-start; }
+  .two-col > div { flex: 1; }
+
+  /* grid illustration */
+  .grid-container { display: flex; gap: 40px; justify-content: center; align-items: flex-start; margin: 20px 0; }
+  .grid-label { font-size: 1.05em; font-weight: 600; text-align: center; margin-bottom: 8px; }
+  .mini-grid { display: grid; gap: 2px; justify-content: center; }
+  .mini-cell {
+    width: 32px; height: 32px; border: 1px solid #ccc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7em;
+  }
+  .mini-cell.hot { background: #ffcdd2; }
+  .mini-cell.bg  { background: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<!-- ============================== Slide 1: Title ============================== -->
+<div class="slide title-slide">
+  <h1>Multi-Dimensional Apriori-Window</h1>
+  <div class="subtitle">多次元トランザクションデータにおける<br><span class="red">密集アイテムセット領域</span>の厳密抽出</div>
+  <div class="author mt">研究紹介　高安奏多</div>
+</div>
+
+<!-- ============================== Slide 2: 分析者が欲しいもの ============================== -->
+<div class="slide">
+  <h2>分析者が本当に欲しい答え</h2>
+  <p>大規模小売・疫学・物流データで知りたいこと：</p>
+  <p class="small" style="margin-top:-8px;">※ アイテムセット＝一緒に買われた商品の組み合わせ（例：{ビール, ポテトチップス}）</p>
+  <div class="diagram mt">
+    <div class="box highlight">何が<br><span class="small">アイテムセット P</span></div>
+    <div class="arrow">+</div>
+    <div class="box highlight">いつ・どこで<br><span class="small">密集領域 R(P)</span></div>
+  </div>
+  <p class="mt">例：「<span class="red">ビールとポテトチップス</span>は<span class="red">週46〜52・都市部店舗</span>で集中購買」</p>
+  <p class="mt-s gray">→ 地域・時期に特化した在庫計画やプロモーションに直結</p>
+  <p class="mt">パターン P だけでは「どこに追加発注？」が不明<br>
+     領域 R だけでは「何を発注？」が特定できない<br>
+     <span class="red">両方が揃って初めて施策を立案できる</span></p>
+</div>
+
+<!-- ============================== Slide 3: 既存手法の限界 ============================== -->
+<div class="slide">
+  <h2>既存手法の限界</h2>
+  <table>
+    <tr>
+      <th>手法カテゴリ</th>
+      <th>アイテムセット<br>列挙</th>
+      <th>時空間<br>密集領域</th>
+      <th>領域形状</th>
+    </tr>
+    <tr>
+      <td style="text-align:left">Apriori / FP-Growth</td>
+      <td class="yes">○</td>
+      <td class="no">×</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">LPFIM / LPPM</td>
+      <td class="yes">○</td>
+      <td>1Dのみ</td>
+      <td>区間</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">Apriori-Window（1D）</td>
+      <td class="yes">○</td>
+      <td>1Dのみ</td>
+      <td>区間</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">MZoom（密テンソル）</td>
+      <td class="no">△</td>
+      <td class="yes">○</td>
+      <td>直積のみ</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">LISA / ST-DBSCAN</td>
+      <td class="no">×</td>
+      <td class="yes">○</td>
+      <td>任意</td>
+    </tr>
+    <tr style="background: #fff8e1;">
+      <td style="text-align:left"><span class="red">本手法（提案）</span></td>
+      <td class="yes">○</td>
+      <td class="yes">○</td>
+      <td><span class="red">任意</span></td>
+    </tr>
+  </table>
+  <p class="center mt"><span class="red">パターン列挙と多次元密集領域抽出を同時に達成する手法がない</span></p>
+</div>
+
+<!-- ============================== Slide 4: Apriori特性 ============================== -->
+<div class="slide">
+  <h2>Apriori 特性（反単調性）</h2>
+
+  <p style="font-size:1.35em; margin-bottom:20px;">
+    <span class="red">「頻出でないアイテムセットの上位集合も頻出でない」</span>
+  </p>
+
+  <div style="display:flex; justify-content:center; margin:28px 0;">
+    <div style="text-align:center; font-size:1.1em; line-height:2.2;">
+      <div style="font-size:0.85em; color:#888; margin-bottom:2px;">↑ 大きい集合（上位集合）</div>
+      <div style="margin-bottom:4px; color:#d32f2f; text-decoration:line-through;">{A, B, C}</div>
+      <div style="display:flex; justify-content:center; gap:48px;">
+        <span style="color:#d32f2f; text-decoration:line-through;">{A, B}</span><span>{A, C}</span><span style="color:#d32f2f; text-decoration:line-through;">{B, C}</span>
+      </div>
+      <div style="display:flex; justify-content:center; gap:48px;">
+        <span>{A}</span><span style="color:#d32f2f; text-decoration:line-through;">{B}</span><span>{C}</span>
+      </div>
+      <div style="font-size:0.85em; color:#888; margin-top:2px;">↓ 小さい集合</div>
+    </div>
+  </div>
+  <p class="center small" style="margin-top:0;">例：{B} が非頻出 → {B}を含む上位集合 {A,B}, {B,C}, {A,B,C} をすべて<span class="red">枝刈り</span></p>
+
+  <div class="mt" style="background:#f5f5f5; padding:16px 24px; border-radius:8px;">
+    <h3 style="margin-bottom:8px;">なぜ重要か？</h3>
+    <ul style="font-size:1.1em;">
+      <li>アイテムが10個なら組み合わせは1,024通り、20個なら約100万通りと<b>指数的に爆発</b></li>
+      <li>反単調性により、非頻出パターンの<b>上位集合を丸ごとスキップ</b>できる</li>
+      <li>本手法ではこの性質を、次スライドで説明する<span class="red">ウィンドウ内の出現数</span>にも適用</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================== Slide 5: 1D Apriori-Window ============================== -->
+<div class="slide">
+  <h2>基盤：1D Apriori-Window の仕組み</h2>
+
+  <h3>核心アイデア：スライディング窓で局所サポートを直接計算</h3>
+
+  <div style="margin: 20px 0;">
+    <p style="font-size:1.05em; margin-bottom:8px;">時刻列上のパターン P の出現（●）に窓幅 W のウィンドウをスライド：</p>
+    <div class="window-row">
+      <div class="cell empty">0</div>
+      <div class="cell in-window" style="font-weight:700;">●</div>
+      <div class="cell in-window">　</div>
+      <div class="cell in-window" style="font-weight:700;">●</div>
+      <div class="cell in-window" style="font-weight:700;">●</div>
+      <div class="cell">　</div>
+      <div class="cell" style="font-weight:700;">●</div>
+      <div class="cell">　</div>
+      <div class="cell">　</div>
+      <div class="cell" style="font-weight:700;">●</div>
+    </div>
+    <div style="display:flex; justify-content:center;">
+      <div style="width:208px; margin-left:52px;">
+        <div class="brace">← 窓 [l, l+W] →</div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="mt-s">
+    <li><b>区間サポート</b>：sup(P, l, W) = 窓 [l, l+W] 内の P の出現数</li>
+    <li>sup(P, l, W) ≥ θ なら、その窓位置 l は<span class="red">「密集開始点」</span></li>
+    <li>密集開始点の連続区間 [a, b] → <span class="red">密集区間 [a, b+W]</span></li>
+  </ul>
+
+  <div class="mt" style="background:#f5f5f5; padding:16px 24px; border-radius:8px;">
+    <p style="margin:0;">前スライドの<span class="red">Apriori 特性</span>がここでも成立：部分集合が密集でなければ、親集合も密集でない</p>
+    <p style="margin:4px 0 0 0;">→ <b>Apriori 枝刈り</b>で候補空間を大幅削減</p>
+  </div>
+</div>
+
+<!-- ============================== Slide 6: 1Dの限界 ============================== -->
+<div class="slide">
+  <h2>1Dの限界 → 多次元化の必要性</h2>
+
+  <div class="grid-container mt">
+    <div>
+      <div class="grid-label">1D：時間軸のみ</div>
+      <div class="window-row">
+        <div class="cell empty">w1</div>
+        <div class="cell dense">w2</div>
+        <div class="cell dense">w3</div>
+        <div class="cell dense">w4</div>
+        <div class="cell empty">w5</div>
+      </div>
+      <p class="small center mt-s">「<b>いつ</b>密集？」→ 答えられる</p>
+      <p class="small center" style="color:#d32f2f;">「<b>どこで</b>密集？」→ 答えられない</p>
+    </div>
+    <div style="font-size:2em; display:flex; align-items:center; color:#888;">→</div>
+    <div>
+      <div class="grid-label">多次元：時間 × 空間</div>
+      <div class="mini-grid" style="grid-template-columns: repeat(5,32px);">
+        <div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div>
+        <div class="mini-cell bg"></div><div class="mini-cell hot"></div><div class="mini-cell hot"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div>
+        <div class="mini-cell bg"></div><div class="mini-cell hot"></div><div class="mini-cell hot"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div>
+        <div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div>
+        <div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div><div class="mini-cell bg"></div>
+      </div>
+      <p class="small center mt-s" style="color:#d32f2f;">「<b>いつ・どこで</b>密集？」に答える</p>
+    </div>
+  </div>
+
+  <div class="mt" style="background:#fff8e1; padding:16px 24px; border-radius:8px;">
+    <p style="margin:0;"><b>課題</b>：多次元に拡張すると…</p>
+    <ul style="margin-top:8px; font-size:1.1em;">
+      <li>同一時刻に<span class="red">複数トランザクション</span>が存在（重複タイムスタンプ）</li>
+      <li>空間開始点の組み合わせ爆発</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================== Slide 7: 提案手法 ============================== -->
+<div class="slide">
+  <h2>提案：多次元 Apriori-Window</h2>
+
+  <p style="font-size:1.3em; margin-bottom:24px;">
+    核心：<span class="red">d 次元問題を「固定空間開始点ごとの 1D 問題」に還元</span>
+  </p>
+
+  <div class="diagram">
+    <div class="box">d次元<br>トランザクション</div>
+    <div class="arrow">→</div>
+    <div class="box highlight">空間開始点ごとに<br>時刻の多重集合へ変換</div>
+    <div class="arrow">→</div>
+    <div class="box">1D ソルバーで<br>密集区間計算</div>
+  </div>
+
+  <div class="mt">
+    <h3>3つの技法</h3>
+    <ul>
+      <li><span class="red">1D 還元</span>：空間の位置を固定して、時間方向だけの問題に分解する</li>
+      <li><span class="red">部分集合の密集区間で枝刈り</span>：小さいアイテムセットの結果を使い、候補を絞り込む（Apriori 枝刈り）</li>
+      <li><span class="red">重複タイムスタンプの一括処理</span>：同じ時刻のデータをまとめて効率的に処理</li>
+    </ul>
+  </div>
+
+  <div class="mt" style="background:#f5f5f5; padding:16px 24px; border-radius:8px;">
+    <p style="margin:0;">多次元化しても本質的に解いているのは<span class="red">「重複を許す 1D Apriori-Window」</span></p>
+  </div>
+</div>
+
+<!-- ============================== Slide 8: 結果 ============================== -->
+<div class="slide">
+  <h2>実験結果ハイライト</h2>
+
+  <div class="two-col mt">
+    <div>
+      <h3>合成データ比較（EX-1）</h3>
+      <p class="small" style="margin:0 0 4px 0;">F1＝パターンの検出精度、Jaccard＝領域の一致度（1.00 が完全一致）</p>
+      <table style="font-size:1em; margin:12px 0;">
+        <tr><th></th><th>提案手法</th><th>既存最良</th></tr>
+        <tr><td style="text-align:left">パターン検出 F1</td><td class="yes"><span class="red">1.00</span></td><td>0.917</td></tr>
+        <tr><td style="text-align:left">領域復元 Jaccard</td><td class="yes"><span class="red">1.00</span></td><td>0.190</td></tr>
+      </table>
+      <p class="small">※ 提案手法は定義の厳密解を出力するため F1 = Jaccard = 1.00</p>
+
+      <h3 class="mt">スケーラビリティ（EX-2）</h3>
+      <ul style="font-size:1.05em;">
+        <li>N に対して<span class="red">線形スケーリング</span></li>
+        <li>10<sup>8</sup> トランザクション → <span class="red">約12分</span>で処理</li>
+      </ul>
+    </div>
+    <div>
+      <h3>実データ適用（EX-3）</h3>
+      <ul style="font-size:1.05em;">
+        <li><b>犯罪</b>（Chicago, NYPD）<br><span class="small">→ 複合犯罪ホットスポットを特定</span></li>
+        <li><b>市民苦情</b>（NYC 311）<br><span class="small">→ 騒音+違法駐車の複合パターン</span></li>
+        <li><b>地震</b>（USGS, d=4）<br><span class="small">→ 深さ別の密集パターンを識別</span></li>
+      </ul>
+      <p class="mt-s">いずれも<span class="red">ドメイン知識と整合</span>する<br>解釈可能な結果</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== Slide 9: まとめ ============================== -->
+<div class="slide">
+  <h2>まとめ</h2>
+
+  <h3>貢献</h3>
+  <ul>
+    <li><span class="red">多次元 Apriori-Window</span> を提案：パターン列挙と密集領域抽出を同時に達成する初の手法</li>
+    <li>固定空間開始点ごとの <span class="red">1D 還元</span>により、多次元でも厳密解を保証</li>
+    <li>10<sup>8</sup> 規模のデータに対する<span class="red">線形スケーラビリティ</span>を実証</li>
+  </ul>
+
+  <h3 class="mt">今後の課題</h3>
+  <ul>
+    <li>W と θ の<b>適応的パラメータ選択</b></li>
+    <li>累積和・差分更新による<b>更なる高速化</b></li>
+  </ul>
+</div>
+
+<!-- ============================== Navigation ============================== -->
+<div class="progress" id="progress"></div>
+<div class="page-num" id="pageNum"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width =
+      ((current + 1) / slides.length * 100) + '%';
+    document.getElementById('pageNum').textContent =
+      (current + 1) + ' / ' + slides.length;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault(); showSlide(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+      e.preventDefault(); showSlide(current - 1);
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (e.clientX > window.innerWidth / 2) showSlide(current + 1);
+    else showSlide(current - 1);
+  });
+
+  showSlide(0);
+</script>
+
+</body>
+</html>

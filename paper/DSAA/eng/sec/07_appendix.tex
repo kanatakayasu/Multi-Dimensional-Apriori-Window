@@ -1,0 +1,258 @@
+% ==============================================================
+\section{Complexity Analysis}
+\label{sec:complexity_appendix}
+% ==============================================================
+
+\begin{table}[h]
+\centering
+\caption{Computational complexity of the proposed method.
+$N_P$: number of transactions containing pattern $P$,
+$W_{\mathrm{sp}} = \prod_{k=1}^{d-1} (W_k + 1)$,
+$\widetilde N_P = N_P W_{\mathrm{sp}}$,
+$I_P$: total number of intervals in the candidate interval map.}
+\label{tab:complexity}
+\small
+\begin{tabular}{lll}
+\toprule
+Step & Complexity \\
+\midrule
+Construction of $L_P$ & $O(N_P \cdot W_{\mathrm{sp}})$ \\
+Sorting of $L_P$ & $O(\widetilde N_P \log \widetilde N_P)$ \\
+Temporal interval & \multirow{2}{*}{$O\!\left(\sum_{\bm{s}_{\mathrm{sp}}}|L_P(\bm{s}_{\mathrm{sp}})| \log |L_P(\bm{s}_{\mathrm{sp}})|\right)$} \\
+\quad computation & \\
+Candidate interval & \multirow{2}{*}{$O(I_P)$} \\
+\quad map intersection & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The overall complexity faithful to the current implementation is
+\[
+  O\!\left(
+    \sum_{P \in \mathcal{F}}
+      \bigl(
+        N_P W_{\mathrm{sp}}
+        +
+        \widetilde N_P \log \widetilde N_P
+        +
+        I_P
+      \bigr)
+  \right)
+\]
+where $\mathcal{F}$ is the set of candidate patterns actually evaluated.
+The key factor governing practical complexity is $|\mathcal{F}|$,
+which is controlled by Apriori pruning (Lemma~\ref{lem:apriori}):
+any pattern whose $(k{-}1)$-subsets have empty candidate interval maps is pruned
+without evaluation, bounding $|\mathcal{F}|$ to the set of dense patterns.
+In the worst case, when all itemsets are dense,
+$|\mathcal{F}|$ grows exponentially in $|\mathcal{I}|$;
+this is inherent to any exact enumeration algorithm and is
+mitigated in practice by the sparsity of real transaction data.
+
+% ==============================================================
+\section{Proofs of Lemmas}
+\label{sec:proofs}
+% ==============================================================
+
+\begin{proof}[Proof of Lemma~\ref{lem:apriori}]
+For any transaction $n$, if $P \subseteq d_n$ then $Q \subseteq d_n$.
+Therefore, for any fixed spatial start vector $\bm{s}_{\mathrm{sp}}$,
+each element of $L_P(\bm{s}_{\mathrm{sp}})$
+is also contained in $L_Q(\bm{s}_{\mathrm{sp}})$.
+Hence, for any $s_0$,
+$S_P(s_0,\bm{s}_{\mathrm{sp}}) \leq S_Q(s_0,\bm{s}_{\mathrm{sp}})$ holds.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:stride}]
+Consider the rightmost $\theta$ events within the current window
+$[l, l+W_0]$.
+The leftmost of these is $L[l_{\mathrm{lo}} + (c-\theta)] = l_{\mathrm{dense}}$.
+For any $l' \leq l_{\mathrm{dense}}$,
+all $\theta$ events are $\geq l'$,
+and since $l' \geq l$, we have $l'+W_0 \geq l+W_0$.
+Therefore, these events do not leave the current window $[l,l+W_0]$
+and are all contained in $[l', l'+W_0]$ as well.
+Hence, at least $\theta$ events remain within the window at $l'$.
+\end{proof}
+
+
+% ==============================================================
+\section{EX-1 Synthetic Data Generation Details}
+\label{sec:ex1_data_details}
+% ==============================================================
+
+\paragraph{Background data generation.}
+One transaction is placed at every grid point of a
+$T{=}100 \times S{=}100$ grid.
+With $|\mathcal{I}|{=}40$ items,
+each item is independently sampled from
+Bernoulli$(p_{\mathrm{item}}{=}0.15)$ per cell to form the background.
+Cells where all items are absent are assigned item~1 by default.
+
+\paragraph{Pattern embedding.}
+GT patterns $P_k = \{2k{-}1,\, 2k\}$ ($k=1,\ldots,20$)
+are assigned to spatial bands
+$s \in [5(k{-}1),\; 5(k{-}1){+}4]$ (width 5 cells).
+Within cells belonging to the embedding region of each shape,
+item pair $P_k$ is co-embedded independently with
+Bernoulli$(p_{\mathrm{embed}}{=}0.25)$.
+
+\paragraph{Embedding shapes.}
+Each shape specifies the spatio-temporal distribution of pattern $P_k$
+within its spatial band
+($b_s = 5(k-1)$, $b_e = b_s + 4$).
+
+\begin{itemize}
+\item \textbf{Shape A (rectangular)}:
+  Uniformly embedded in all cells with
+  $t \in [30,70]$ and $s \in [b_s, b_e]$.
+  The simplest fixed rectangular region in both time and space.
+\item \textbf{Shape B (drift)}:
+  At each time step $t \in [30,70]$,
+  a band of width 5 is centered at
+  $s_c = \lfloor b_s + (t - 30) / 40 \cdot 2 \rceil$
+  (linearly shifting from $b_s$ to $b_s{+}2$).
+  The dense band drifts smoothly along the spatial axis over time.
+\item \textbf{Shape C (intermittent)}:
+  $t \in [15,35] \cup [65,85]$, $s \in [b_s, b_e]$.
+  Dense activity occurs in the same spatial band
+  during two independent time intervals.
+\item \textbf{Shape D (expanding)}:
+  $t \in [30,40]$: center cell $b_s{+}2$ only (width 1);
+  $t \in [41,55]$: $s \in [b_s{+}1, b_e{-}1]$ (width 3);
+  $t \in [56,70]$: $s \in [b_s, b_e]$ (width 5).
+  The spatial extent grows stepwise as time progresses.
+\end{itemize}
+
+\paragraph{Evaluation setup.}
+Three random seeds (seed $\in \{42,55,68\}$) are used per shape,
+giving $4 \times 3 = 12$ datasets in total.
+The proposed method uses $W = (20, 5)$ and $\theta = 30$
+uniformly across all shapes.
+Grid search parameter ranges are shown in Table~\ref{tab:params_ex3}.
+
+\begin{table}[h]
+\centering
+\caption{Grid search parameter ranges for EX-1 baseline methods.}
+\label{tab:params_ex3}
+\small
+\begin{tabular}{lp{0.62\columnwidth}}
+\toprule
+Method & Grid search targets \\
+\midrule
+Colocation   & PI threshold $\tau \in \{0.05, 0.07, \ldots, 0.49\}$ (23 values) \\
+STCP-Miner   & PI threshold (same) $\times$ window width $W_t \in \{4, 13, 26, 54\}$ \\
+MZoom        & Top block count $k \in \{1, 2, 3, 5\}$ \\
+ST-DBSCAN    & $\varepsilon_1 \in \{1,2,3\}$, $\varepsilon_2 \in \{3,7,15\}$, min\_pts $\in \{2,5\}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==============================================================
+\section{EX-2 Synthetic Data Generation Details}
+\label{sec:ex2_data_details}
+% ==============================================================
+
+In EX-2, synthetic data is generated by placing
+one transaction at \textbf{every} grid point of a $d = 2$ grid
+$\{0,\ldots,T{-}1\} \times \{0,\ldots,S{-}1\}$.
+For each transaction,
+each item is independently sampled from
+Bernoulli$(p_{\mathrm{item}})$ with
+vocabulary size $|\mathcal{I}| = 20$ and
+background occurrence probability $p_{\mathrm{item}} = 0.10$.
+Cells where all items are absent
+are assigned item~1 by default,
+guaranteeing exactly one transaction per cell.
+This ensures the number of transactions is exactly $N = T \times S$.
+
+No embedded patterns are injected.
+Dense patterns arise naturally from
+statistical fluctuations of the Bernoulli background.
+Preliminary calibration showed that
+a sufficient number of patterns is detected
+at threshold $\theta = 15$ across all configurations.
+
+
+% ==============================================================
+\section{Real Dataset Details}
+\label{sec:real_data_qualitative}\label{sec:dataset_details}
+% ==============================================================
+
+\paragraph{Dataset overview.}
+The four real-world datasets used in EX-3 (\S\ref{sec:ex3}) are detailed below.
+
+\begin{itemize}
+\item \textbf{Chicago Crime}~\cite{chicagocrime}:
+  Crime report data published by the City of Chicago.
+  Includes date/time, latitude, longitude,
+  and crime type (33 types).
+  Time discretized into weekly bins;
+  latitude and longitude into $0.02^\circ$ equal-width bins
+  (grid size $261 \times 20 \times 21$).
+\item \textbf{NYPD Crime}~\cite{nypdcrime}:
+  Crime report data published by the New York City Police Department.
+  Includes crime type (69 types).
+  Weekly bins, $0.02^\circ$ spatial bins
+  (grid size $261 \times 43 \times 57$).
+\item \textbf{NYC 311}~\cite{nyc311}:
+  Citizen complaint (311) data from New York City.
+  Includes complaint type (232 types).
+  Weekly bins, $0.02^\circ$ spatial bins
+  (grid size $261 \times 43 \times 57$).
+\item \textbf{USGS Earthquake}~\cite{usgseq}:
+  Earthquake catalog published by the United States Geological Survey.
+  Magnitude discretized into 5 bands and used as items.
+  This is the only 4-dimensional dataset
+  (time $\times$ latitude $\times$ longitude $\times$ depth),
+  with grid size $1{,}096 \times 20 \times 20 \times 4$.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{Experimental datasets.
+$N$: number of transactions (non-empty cells),
+\#Items: number of item types,
+avg$\ell$: average items per transaction,
+$d$: dimensionality.}
+\label{tab:datasets}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $N$ & \#Items & avg$\ell$ & $d$ \\
+\midrule
+Chicago Crime~\cite{chicagocrime}  &  47,217 &  33 &  7.59 & 3 \\
+NYPD Crime~\cite{nypdcrime}        & 189,481 &  69 &  5.67 & 3 \\
+NYC 311~\cite{nyc311}              & 135,490 & 232 & 18.14 & 3 \\
+USGS Earthquake~\cite{usgseq}      &  13,151 &   5 &  1.17 & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Experimental parameters.}
+Maximum pattern length $|P| \leq 3$ was used for all datasets.
+The three 3-dimensional datasets (Chicago/NYPD/NYC~311) share
+temporal window $W_0 = 4$ weeks and spatial windows $W_k = 3$ bins
+($k = 1, 2$), with only threshold $\theta$ adjusted per dataset.
+USGS Earthquake used $W_0 = 13$ weeks, $W_k = 2$ bins ($k = 1,2,3$),
+and $\theta = 2$.
+
+\begin{table}[h]
+\centering
+\caption{Detection results of the proposed method on real datasets.
+  $\theta$: density threshold,
+  Total: number of patterns (all sizes),
+  time: execution time (seconds).}
+\label{tab:realdata_npatterns}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $W$ & $\theta$ & Total & time (s) \\
+\midrule
+Chicago Crime  & $(4,3,3)$    &   3 & 2,835 &   9.7 \\
+NYPD Crime     & $(4,3,3)$    &   5 & 4,478 &  38.2 \\
+NYC 311        & $(4,3,3)$    &  35 & 5,130 & 108.7 \\
+USGS Earthq.   & $(13,2,2,2)$ &   2 &    18 &   0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}

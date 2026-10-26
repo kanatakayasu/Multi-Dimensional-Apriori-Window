@@ -11,6 +11,10 @@ path = "src/lib.rs"
 name = "apriori_window_1d"
 path = "src/main.rs"
 
+[[bin]]
+name = "streaming_benchmark"
+path = "src/bin/streaming_benchmark.rs"
+
 [dependencies]
 itertools = "0.14"
 rayon = "1.11"

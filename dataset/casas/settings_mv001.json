@@ -1,0 +1,15 @@
+{
+  "input_file": {
+    "dir": "/Users/kanata/Documents/GitHub/apriori-window-C/dataset/casas",
+    "file_name": "mv001_1h.txt"
+  },
+  "output_files": {
+    "dir": "/Users/kanata/Documents/GitHub/apriori-window-C/dataset/casas",
+    "patterns_output_file_name": "mv001_1h_patterns.csv"
+  },
+  "apriori_parameters": {
+    "window_size": 24,
+    "min_support": 20,
+    "max_length": 4
+  }
+}

@@ -91,13 +91,15 @@ pub fn compute_dense_intervals(
             in_dense = false;
             start = None;
             interval_end = None;
-            // A non-dense window can only become dense again when the first event
-            // outside [l, l+W] enters the right edge of the window.
-            if end_idx >= ts.len() {
+            // Jump to the position where enough occurrences enter the window
+            // to potentially reach threshold (deficit-aware stride).
+            let deficit = threshold - count;
+            let jump_idx = end_idx + deficit - 1;
+            if jump_idx >= ts.len() {
                 break;
             }
-            let next_outside = ts[end_idx];
-            l = (l + 1).max(next_outside - window_size);
+            let next_needed = ts[jump_idx];
+            l = (l + 1).max(next_needed - window_size);
             continue;
         }
 
@@ -165,11 +167,13 @@ pub fn compute_dense_intervals_multiset(
             in_dense = false;
             start = None;
             interval_end = None;
-            if end_idx >= ts.len() {
+            let deficit = threshold - count;
+            let jump_idx = end_idx + deficit - 1;
+            if jump_idx >= ts.len() {
                 break;
             }
-            let next_outside = ts[end_idx];
-            l = (l + 1).max(next_outside - window_size);
+            let next_needed = ts[jump_idx];
+            l = (l + 1).max(next_needed - window_size);
             continue;
         }
 
@@ -279,11 +283,13 @@ pub fn compute_dense_intervals_with_candidates(
                 start = None;
                 interval_end = None;
                 dense_end = None;
-                if end_idx >= ts.len() {
+                let deficit = threshold - count;
+                let jump_idx = end_idx + deficit - 1;
+                if jump_idx >= ts.len() {
                     break;
                 }
-                let next_outside = ts[end_idx];
-                let next_l = (l + 1).max(next_outside - window_size);
+                let next_needed = ts[jump_idx];
+                let next_l = (l + 1).max(next_needed - window_size);
                 if next_l > c_end {
                     break;
                 }
@@ -417,11 +423,13 @@ pub fn compute_dense_intervals_with_candidates_multiset(
                 start = None;
                 interval_end = None;
                 dense_end = None;
-                if end_idx >= ts.len() {
+                let deficit = threshold - count;
+                let jump_idx = end_idx + deficit - 1;
+                if jump_idx >= ts.len() {
                     break;
                 }
-                let next_outside = ts[end_idx];
-                let next_l = (l + 1).max(next_outside - window_size);
+                let next_needed = ts[jump_idx];
+                let next_l = (l + 1).max(next_needed - window_size);
                 if next_l > c_end {
                     break;
                 }

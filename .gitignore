@@ -4,3 +4,31 @@ apriori_window_1d/target/
 
 # macOS
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# LaTeX build artifacts
+paper/target/
+paper/**/*.aux
+paper/**/*.bbl
+paper/**/*.blg
+paper/**/*.fdb_latexmk
+paper/**/*.fls
+paper/**/*.log
+paper/**/*.out
+paper/**/*.synctex.gz
+paper/**/*.xdv
+
+# Large raw datasets (not tracked in git)
+dataset/casas/labeled_data/
+dataset/casas/labeled_data.zip
+
+# Personal files (not part of the project)
+IMG_6727.heic
+IMG_6727.pdf
+NOC-letter-MinistryOfHomeIndia.pdf
+PDF書類.pdf
+スクリーンショット*.png
+review.txt

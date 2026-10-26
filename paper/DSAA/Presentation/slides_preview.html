@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DSAA2026 Slide Preview</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+h1.toc { text-align:center; color:#a0c4ff; margin-bottom:30px; font-size:1.4rem; letter-spacing:2px; }
+.slide-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap:28px; }
+
+.slide {
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.slide-header {
+  background: #1a3a6e;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.slide-no { background:#a0c4ff; color:#1a3a6e; border-radius:4px; padding:1px 7px; font-size:0.68rem; font-weight:900; }
+.slide-body { flex:1; display:flex; padding:10px 14px; gap:10px; overflow:hidden; }
+.col { flex:1; display:flex; flex-direction:column; gap:6px; }
+.col.narrow { flex:0 0 38%; }
+.col.wide { flex:0 0 58%; }
+
+/* Typography helpers */
+.title-main { font-size:1.3rem; font-weight:900; color:#1a3a6e; text-align:center; margin: auto; line-height:1.4; }
+.subtitle { font-size:0.8rem; color:#555; text-align:center; margin-top:4px; }
+.affil { font-size:0.65rem; color:#888; text-align:center; margin-top:8px; }
+.section-title { font-size:0.85rem; font-weight:800; color:#1a3a6e; border-bottom:2px solid #1a3a6e; padding-bottom:2px; margin-bottom:4px; }
+.bullet { font-size:0.68rem; line-height:1.5; }
+.bullet li { margin-left:14px; margin-bottom:2px; }
+.highlight-box { background:#e8f0fe; border-left:3px solid #1a3a6e; padding:5px 8px; border-radius:3px; font-size:0.67rem; }
+.warn-box { background:#fff3e0; border-left:3px solid #e65100; padding:5px 8px; border-radius:3px; font-size:0.67rem; }
+.success-box { background:#e8f5e9; border-left:3px solid #2e7d32; padding:5px 8px; border-radius:3px; font-size:0.67rem; }
+.math { font-family: 'Times New Roman', serif; font-style: italic; font-size:0.72rem; }
+.tag { display:inline-block; background:#1a3a6e; color:#fff; border-radius:3px; padding:1px 5px; font-size:0.6rem; font-weight:bold; }
+.tag.green { background:#2e7d32; }
+.tag.red { background:#c62828; }
+.tag.orange { background:#e65100; }
+
+/* Table styles */
+table.mini { width:100%; border-collapse:collapse; font-size:0.62rem; }
+table.mini th { background:#1a3a6e; color:#fff; padding:3px 5px; }
+table.mini td { border-bottom:1px solid #ddd; padding:3px 5px; }
+table.mini tr:nth-child(even) td { background:#f5f5f5; }
+.check { color:#2e7d32; font-weight:bold; }
+.cross { color:#c62828; font-weight:bold; }
+.partial { color:#e65100; font-weight:bold; }
+
+/* SVG wrapper */
+.svg-wrap { flex:1; display:flex; align-items:center; justify-content:center; }
+
+/* Step boxes */
+.step-row { display:flex; gap:5px; align-items:center; }
+.step-box { background:#1a3a6e; color:#fff; border-radius:5px; padding:5px 8px; font-size:0.62rem; font-weight:bold; text-align:center; flex:1; line-height:1.4; }
+.step-arrow { color:#1a3a6e; font-size:1.1rem; font-weight:900; }
+
+/* Bar chart */
+.bar-chart { display:flex; flex-direction:column; gap:4px; }
+.bar-row { display:flex; align-items:center; gap:5px; font-size:0.6rem; }
+.bar-label { width:60px; text-align:right; color:#555; }
+.bar-outer { flex:1; background:#e0e0e0; border-radius:3px; height:12px; }
+.bar-inner { height:100%; border-radius:3px; transition:width 0.3s; }
+.bar-val { width:40px; font-size:0.58rem; color:#555; }
+
+/* Grid diagram */
+.grid-demo { display:grid; gap:1px; background:#ccc; border:1px solid #ccc; }
+.cell { background:#f0f4ff; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:0.5rem; }
+.cell.hot { background:#ef9a9a; }
+.cell.warm { background:#ffcc80; }
+.cell.cold { background:#f0f4ff; }
+
+/* Slide-specific accent colors */
+.slide.blue .slide-header { background:#1a3a6e; }
+.slide.teal .slide-header { background:#00695c; }
+.slide.purple .slide-header { background:#4a148c; }
+.slide.dark .slide-header { background:#212121; }
+</style>
+</head>
+<body>
+<h1 class="toc">DSAA2026 — Slide Preview (18 slides)</h1>
+<div class="slide-grid">
+
+<!-- S01 Title -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S01 — Title</span><span class="slide-no">01 / 18</span>
+  </div>
+  <div class="slide-body" style="align-items:center; justify-content:center; flex-direction:column; background:linear-gradient(135deg,#e8f0fe,#fff);">
+    <div class="title-main">Multi-Dimensional Apriori-Window:<br>Exact Mining of Dense Itemset Regions<br>over Arbitrary Dimensions</div>
+    <div class="subtitle" style="margin-top:12px;">DSAA 2026</div>
+    <div class="affil">Author Name &nbsp;|&nbsp; University / Organization</div>
+    <div style="margin-top:10px; font-size:0.62rem; color:#888;">⏱ 15〜17 min presentation</div>
+  </div>
+</div>
+
+<!-- S02 Motivation -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S02 — Motivation: "When, Where, What?"</span><span class="slide-no">02 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">POS データ分析の問い</div>
+      <svg width="100%" height="130" viewBox="0 0 300 130">
+        <!-- store axis -->
+        <text x="10" y="14" font-size="9" fill="#555">Store</text>
+        <text x="10" y="26" font-size="7" fill="#555">0-9</text>
+        <text x="10" y="38" font-size="7" fill="#555">10-19</text>
+        <text x="10" y="50" font-size="7" fill="#555">20-29</text>
+        <!-- week axis -->
+        <text x="50" y="68" font-size="8" fill="#555">Wk1</text>
+        <text x="100" y="68" font-size="8" fill="#555">Wk26</text>
+        <text x="150" y="68" font-size="8" fill="#555">Wk46</text>
+        <text x="200" y="68" font-size="8" fill="#555">Wk52</text>
+        <!-- cells -->
+        <rect x="50" y="18" width="100" height="12" fill="#bbdefb" rx="2"/>
+        <rect x="50" y="30" width="100" height="12" fill="#bbdefb" rx="2"/>
+        <rect x="50" y="42" width="100" height="12" fill="#bbdefb" rx="2"/>
+        <!-- hot zone -->
+        <rect x="155" y="18" width="65" height="12" fill="#ef5350" rx="2"/>
+        <rect x="155" y="30" width="65" height="12" fill="#ef5350" rx="2"/>
+        <rect x="155" y="42" width="65" height="12" fill="#ef5350" rx="2"/>
+        <rect x="155" y="54" width="65" height="12" fill="#ffcc80" rx="2"/>
+        <!-- label -->
+        <text x="158" y="12" font-size="8" fill="#c62828" font-weight="bold">Beer ∩ Chips</text>
+        <text x="158" y="85" font-size="7" fill="#c62828">← 週46〜52 × 店舗0〜9</text>
+        <text x="158" y="95" font-size="7" fill="#c62828">集中購買ホットスポット</text>
+        <!-- axes labels -->
+        <text x="135" y="80" font-size="8" fill="#555">時間 →</text>
+        <text x="2" y="55" font-size="8" fill="#555" transform="rotate(-90,10,50)">店舗 ↑</text>
+      </svg>
+      <div class="highlight-box">同様のニーズ：疫学（症状共起）・物流（出荷急増）</div>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">必要な出力</div>
+      <div style="margin-top:8px;">
+        <div class="step-box" style="margin-bottom:6px; background:#1a3a6e;">P = {Beer, Chips}</div>
+        <div style="text-align:center; font-size:1.2rem; color:#1a3a6e;">+</div>
+        <div class="step-box" style="margin-top:6px; background:#c62828;">R(P) = 週46〜52<br>× 店舗 0〜9</div>
+      </div>
+      <div class="warn-box" style="margin-top:8px;">P だけでは<br>「どこに発注？」不明<br><br>R だけでは<br>「何を発注？」不明</div>
+    </div>
+  </div>
+</div>
+
+<!-- S03 Existing methods -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S03 — Existing Methods Cannot Answer Both</span><span class="slide-no">03 / 18</span>
+  </div>
+  <div class="slide-body" style="flex-direction:column; gap:8px;">
+    <div class="section-title">2系譜のギャップ</div>
+    <table class="mini">
+      <tr>
+        <th>手法</th><th>代表例</th><th>P 列挙</th><th>R(P) 出力</th><th>領域形状</th>
+      </tr>
+      <tr><td>頻出パターン</td><td>Apriori, FP-Growth</td><td class="check">✓</td><td class="cross">✗</td><td>—</td></tr>
+      <tr><td>局所密集区間</td><td>Apriori-Window</td><td class="check">✓</td><td class="partial">1D のみ</td><td>区間</td></tr>
+      <tr><td>コロケーション</td><td>STCP-Miner</td><td class="check">✓</td><td class="cross">✗</td><td>—</td></tr>
+      <tr><td>密部分テンソル</td><td>M-Zoom</td><td class="partial">△偽陽性</td><td class="partial">直積のみ</td><td>矩形のみ</td></tr>
+      <tr><td>空間統計</td><td>LISA, G*</td><td class="cross">✗</td><td class="partial">空間のみ</td><td>任意</td></tr>
+      <tr><td>時空間クラスタ</td><td>ST-DBSCAN</td><td class="cross">✗</td><td class="partial">窓定義と不整合</td><td>任意</td></tr>
+      <tr style="background:#e8f5e9; font-weight:bold;"><td>本手法</td><td>MD Apriori-Window</td><td class="check">✓</td><td class="check">✓</td><td class="check">任意</td></tr>
+    </table>
+    <div class="warn-box" style="margin-top:4px; font-size:0.65rem;">
+      <b>根本原因：</b>パターン系は反単調領域を持たない → 窓を出力できない。
+      領域系はアイテムセット概念がない → Apriori 枝刈りと統合不可能。
+      これはパラメータ調整で解決できない<b>構造的</b>問題。
+    </div>
+  </div>
+</div>
+
+<!-- S04 Contributions -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S04 — This Paper: Multi-Dimensional Apriori-Window</span><span class="slide-no">04 / 18</span>
+  </div>
+  <div class="slide-body" style="align-items:center; justify-content:center; flex-direction:column; gap:10px;">
+    <div class="section-title" style="text-align:center; border:none;">任意 d 次元グリッドで (P, R(P)) を<span style="color:#c62828;">厳密に</span>列挙</div>
+    <div class="step-row" style="width:100%;">
+      <div class="step-box" style="background:#1565c0;">技法 1<br><span style="font-size:0.58rem; font-weight:normal;">固定空間開始点<br>1D 多重集合還元</span></div>
+      <div class="step-arrow">→</div>
+      <div class="step-box" style="background:#6a1b9a;">技法 2<br><span style="font-size:0.58rem; font-weight:normal;">(k-1)-部分集合<br>interval map 交差</span></div>
+      <div class="step-arrow">→</div>
+      <div class="step-box" style="background:#00695c;">技法 3<br><span style="font-size:0.58rem; font-weight:normal;">重複考慮<br>t 軸ストライド</span></div>
+    </div>
+    <div style="display:flex; gap:10px; width:100%;">
+      <div class="highlight-box" style="flex:1; text-align:center;">F1 = <b>1.00</b><br><span style="font-size:0.6rem;">厳密解（定義による）</span></div>
+      <div class="highlight-box" style="flex:1; text-align:center;">N=10⁸ を<br><b>約9分</b>で処理</div>
+      <div class="highlight-box" style="flex:1; text-align:center;">d=3〜4<br>実データ適用</div>
+    </div>
+  </div>
+</div>
+
+<!-- S05 1D Background -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S05 — Background: 1D Apriori-Window</span><span class="slide-no">05 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">スライディング窓の直感</div>
+      <svg width="100%" height="140" viewBox="0 0 300 140">
+        <!-- timeline -->
+        <line x1="10" y1="40" x2="290" y2="40" stroke="#999" stroke-width="1.5"/>
+        <!-- ticks -->
+        <text x="8" y="56" font-size="8" fill="#555">0</text>
+        <text x="38" y="56" font-size="8" fill="#555">1</text>
+        <text x="68" y="56" font-size="8" fill="#555">2</text>
+        <text x="98" y="56" font-size="8" fill="#555">3</text>
+        <text x="128" y="56" font-size="8" fill="#555">4</text>
+        <text x="158" y="56" font-size="8" fill="#555">5</text>
+        <text x="188" y="56" font-size="8" fill="#555">6</text>
+        <text x="218" y="56" font-size="8" fill="#555">7</text>
+        <text x="248" y="56" font-size="8" fill="#555">8</text>
+        <!-- occurrences -->
+        <circle cx="40" cy="40" r="5" fill="#1565c0"/>
+        <circle cx="70" cy="40" r="5" fill="#1565c0"/>
+        <circle cx="100" cy="40" r="5" fill="#1565c0"/>
+        <circle cx="160" cy="40" r="5" fill="#1565c0"/>
+        <circle cx="220" cy="40" r="5" fill="#1565c0"/>
+        <circle cx="250" cy="40" r="5" fill="#1565c0"/>
+        <!-- window l=0, W=3, c=3 >= θ=2 → dense -->
+        <rect x="10" y="22" width="100" height="18" fill="#ef5350" fill-opacity="0.2" stroke="#ef5350" stroke-width="1.5" rx="2"/>
+        <text x="12" y="20" font-size="7" fill="#ef5350">l=0, c=3 ≥ θ=2 ✓</text>
+        <!-- window l=5, c=1 < θ=2 → not dense -->
+        <rect x="160" y="65" width="90" height="18" fill="#bdbdbd" fill-opacity="0.3" stroke="#bdbdbd" stroke-width="1.5" rx="2"/>
+        <text x="162" y="63" font-size="7" fill="#888">l=5, c=1 &lt; θ=2 ✗</text>
+        <!-- label -->
+        <text x="10" y="100" font-size="8" fill="#555">occ({Beer,Chips}) = {1,2,3,5,7,8}</text>
+        <text x="10" y="114" font-size="8" fill="#555">W=3, θ=2 → 密集区間: [0, 0+3] = [0,3]</text>
+        <text x="10" y="128" font-size="8" fill="#1565c0" font-weight="bold">T_θ(P) = {0,1} → 密集区間 [0, 4]</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">定義</div>
+      <div class="highlight-box math">sup(P, l, W) = |{t∈occ(P) : l≤t≤l+W}|</div>
+      <div style="margin-top:6px;" class="highlight-box math">T_θ(P) = {l : sup(P,l,W) ≥ θ}</div>
+      <div style="margin-top:6px;" class="highlight-box">最大連続成分 [a,b] ⊆ T_θ(P)<br>→ <b>密集区間</b> [a, b+W]</div>
+      <div class="warn-box" style="margin-top:8px; font-size:0.62rem;"><b>限界：</b>1次元（時間軸）のみ</div>
+    </div>
+  </div>
+</div>
+
+<!-- S06 d-dim definition -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S06 — Problem Definition: d-Dimensional Extension</span><span class="slide-no">06 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">d次元 → 密集領域の概念</div>
+      <svg width="100%" height="155" viewBox="0 0 290 155">
+        <!-- 2D grid T x S -->
+        <text x="10" y="12" font-size="8" fill="#555">Time →</text>
+        <text x="2" y="90" font-size="8" fill="#555" transform="rotate(-90,10,80)">Space ↑</text>
+        <!-- grid cells -->
+        <g transform="translate(20,18)">
+          <!-- 8x5 grid -->
+          <rect x="0" y="0" width="200" height="100" fill="#f5f5f5" stroke="#ccc"/>
+          <!-- dense region -->
+          <rect x="100" y="20" width="70" height="40" fill="#ef5350" fill-opacity="0.35" stroke="#ef5350" stroke-width="2" rx="2"/>
+          <!-- hotcells -->
+          <rect x="100" y="20" width="14" height="14" fill="#ef5350" opacity="0.7"/>
+          <rect x="114" y="20" width="14" height="14" fill="#ef5350" opacity="0.6"/>
+          <rect x="128" y="20" width="14" height="14" fill="#ef5350" opacity="0.8"/>
+          <rect x="142" y="20" width="14" height="14" fill="#ef5350" opacity="0.5"/>
+          <rect x="100" y="34" width="14" height="14" fill="#ef5350" opacity="0.6"/>
+          <rect x="114" y="34" width="14" height="14" fill="#ef5350" opacity="0.9"/>
+          <rect x="128" y="34" width="14" height="14" fill="#ef5350" opacity="0.7"/>
+          <!-- window box -->
+          <rect x="100" y="20" width="50" height="40" fill="none" stroke="#1565c0" stroke-width="2" stroke-dasharray="4,2"/>
+          <text x="152" y="16" font-size="7" fill="#1565c0">W=(W₀,W₁)</text>
+          <!-- label -->
+          <text x="102" y="75" font-size="7" fill="#c62828">R_θ(P)</text>
+        </g>
+        <!-- annotation -->
+        <text x="10" y="135" font-size="7" fill="#555">b_n = (time, space₁, ..., spaceₐ₋₁)</text>
+        <text x="10" y="147" font-size="7" fill="#1565c0">密集領域 = 全空間開始点にわたる密集区間の集合</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">問題</div>
+      <div class="highlight-box" style="font-size:0.65rem;">
+        <b>入力</b>: D, W=(W₀…Wₐ₋₁), θ<br><br>
+        <b>出力</b>: 全パターン P の<br>密集領域 R_θ(P) を完全列挙
+      </div>
+      <div style="margin-top:8px;" class="success-box">
+        <b>Apriori 単調性</b><br>
+        Q⊂P ⇒ T_θ(P,s_sp) ⊆ T_θ(Q,s_sp)
+      </div>
+      <div style="margin-top:6px; font-size:0.62rem; color:#555;">→ 枝刈りの根拠</div>
+    </div>
+  </div>
+</div>
+
+<!-- S07 Technique 1 -->
+<div class="slide teal">
+  <div class="slide-header">
+    <span>S07 — Technique 1: 1D Reduction per Spatial Start Point</span><span class="slide-no">07 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">アイデア：空間開始点を固定 → タイムスタンプ多重集合へ</div>
+      <svg width="100%" height="155" viewBox="0 0 300 155">
+        <!-- 2D grid -->
+        <text x="5" y="12" font-size="8" fill="#555">2D トランザクション</text>
+        <g transform="translate(5,18)">
+          <!-- grid 5x4 -->
+          <rect x="0" y="0" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="20" y="0" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="40" y="0" width="20" height="20" fill="#ef9a9a" stroke="#e57373"/>
+          <rect x="60" y="0" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="80" y="0" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="0" y="20" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="20" y="20" width="20" height="20" fill="#ef9a9a" stroke="#e57373"/>
+          <rect x="40" y="20" width="20" height="20" fill="#ef9a9a" stroke="#e57373"/>
+          <rect x="60" y="20" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="80" y="20" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="0" y="40" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="20" y="40" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="40" y="40" width="20" height="20" fill="#ef9a9a" stroke="#e57373"/>
+          <rect x="60" y="40" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <rect x="80" y="40" width="20" height="20" fill="#bbdefb" stroke="#90caf9"/>
+          <!-- timestamps -->
+          <text x="43" y="14" font-size="7" fill="#555">t=2</text>
+          <text x="23" y="34" font-size="7" fill="#555">t=3</text>
+          <text x="43" y="34" font-size="7" fill="#555">t=3</text>
+          <text x="43" y="54" font-size="7" fill="#555">t=5</text>
+          <!-- spatial window box -->
+          <rect x="20" y="0" width="40" height="60" fill="none" stroke="#1565c0" stroke-width="2" stroke-dasharray="3,2"/>
+          <text x="22" y="70" font-size="7" fill="#1565c0">s_sp = 1, W₁ = 1</text>
+        </g>
+        <!-- arrow -->
+        <text x="118" y="60" font-size="18" fill="#00695c">→</text>
+        <!-- 1D multiset -->
+        <text x="140" y="30" font-size="8" fill="#555">L_P(s_sp=1)</text>
+        <text x="140" y="44" font-size="10" fill="#c62828">= {{2, 3, 3, 5}}</text>
+        <text x="140" y="60" font-size="7" fill="#555">(重複 OK)</text>
+        <!-- 1D problem -->
+        <rect x="138" y="70" width="140" height="30" fill="#e8f5e9" stroke="#2e7d32" rx="3"/>
+        <text x="142" y="82" font-size="7" fill="#2e7d32" font-weight="bold">1D Apriori-Window</text>
+        <text x="142" y="94" font-size="7" fill="#555">を適用 → 密集区間を得る</text>
+        <!-- cost note -->
+        <text x="5" y="130" font-size="7" fill="#555">構築コスト: O(N_P · W_sp)</text>
+        <text x="5" y="142" font-size="7" fill="#555">W_sp = ∏(Wₖ+1)  （空間窓の体積）</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">本質</div>
+      <div class="highlight-box" style="font-size:0.65rem;">
+        d次元問題<br>= 空間開始点をキーとする<br>複数の<b>1D 問題</b>に分解
+      </div>
+      <div style="margin-top:8px; font-size:0.65rem; color:#555;">1出現 → 最大 W_sp 個の空間開始点へ寄与</div>
+      <div class="warn-box" style="margin-top:6px; font-size:0.62rem;">W_sp が大きいほど<br>構築コストが増大<br>（制約として明示）</div>
+    </div>
+  </div>
+</div>
+
+<!-- S08 Technique 2 -->
+<div class="slide" style="--hdr:#4a148c;">
+  <div class="slide-header" style="background:#4a148c;">
+    <span>S08 — Technique 2: Apriori Pruning via Interval Map Intersection</span><span class="slide-no">08 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">補題（単調性）の活用</div>
+      <svg width="100%" height="155" viewBox="0 0 290 155">
+        <!-- Item A intervals -->
+        <text x="10" y="18" font-size="8" fill="#555">R_θ({A}):</text>
+        <rect x="50" y="8" width="80" height="12" fill="#1565c0" opacity="0.7" rx="2"/>
+        <rect x="160" y="8" width="60" height="12" fill="#1565c0" opacity="0.7" rx="2"/>
+        <!-- Item B intervals -->
+        <text x="10" y="38" font-size="8" fill="#555">R_θ({B}):</text>
+        <rect x="30" y="28" width="110" height="12" fill="#6a1b9a" opacity="0.7" rx="2"/>
+        <rect x="170" y="28" width="40" height="12" fill="#6a1b9a" opacity="0.7" rx="2"/>
+        <!-- intersection -->
+        <text x="10" y="60" font-size="8" fill="#c62828" font-weight="bold">C({A,B})= R({A}) ∩ R({B}):</text>
+        <rect x="50" y="50" width="80" height="12" fill="#ef5350" opacity="0.3" rx="2"/>
+        <rect x="170" y="50" width="30" height="12" fill="#ef5350" opacity="0.7" rx="2"/>
+        <!-- actual result -->
+        <text x="10" y="84" font-size="8" fill="#2e7d32" font-weight="bold">実際の R_θ({A,B}):</text>
+        <rect x="60" y="74" width="40" height="12" fill="#2e7d32" opacity="0.8" rx="2"/>
+        <rect x="172" y="74" width="18" height="12" fill="#2e7d32" opacity="0.8" rx="2"/>
+        <!-- containment label -->
+        <text x="10" y="106" font-size="7" fill="#555">R({A,B}) ⊆ C({A,B})  （補題1）</text>
+        <!-- pruning example -->
+        <rect x="10" y="115" width="270" height="30" fill="#fff3e0" stroke="#e65100" rx="3"/>
+        <text x="15" y="128" font-size="7" fill="#e65100" font-weight="bold">枝刈り：C(P, s_sp) = ∅ for all s_sp</text>
+        <text x="15" y="140" font-size="7" fill="#555">→ P は密集しえない → 多重集合構築をスキップ</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">手順</div>
+      <div class="highlight-box math" style="font-size:0.63rem;">
+        C(P, s_sp) = ∩<sub>Q∈C(P,k-1)</sub> R_θ(Q)[s_sp]
+      </div>
+      <div style="margin-top:8px; font-size:0.63rem;">
+        <b>k=1</b>: 全空間開始点を評価<br><br>
+        <b>k≥2</b>: 前レベルの密集区間を<br>区間交差で候補を絞り<br>空以外だけ精密評価
+      </div>
+      <div class="success-box" style="margin-top:8px; font-size:0.63rem;">
+        <b>効果</b>: 非密集パターンの<br>多重集合構築を完全回避
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S09 Technique 3 -->
+<div class="slide teal">
+  <div class="slide-header">
+    <span>S09 — Technique 3: Duplicate-Aware t-Stride</span><span class="slide-no">09 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">L = {{1,2,2,3,3,8}}, W₀=3, θ=4</div>
+      <svg width="100%" height="155" viewBox="0 0 300 155">
+        <!-- (a) dense case -->
+        <text x="5" y="14" font-size="8" fill="#2e7d32" font-weight="bold">(a) 密集時 c ≥ θ → ブロック一括出力</text>
+        <!-- timeline -->
+        <line x1="5" y1="35" x2="295" y2="35" stroke="#ccc" stroke-width="1"/>
+        <!-- events -->
+        <circle cx="30" cy="35" r="5" fill="#1565c0"/><text x="27" y="50" font-size="7">1</text>
+        <circle cx="65" cy="35" r="5" fill="#1565c0"/><text x="62" y="50" font-size="7">2</text>
+        <circle cx="90" cy="35" r="5" fill="#1565c0"/><text x="87" y="50" font-size="7">2</text>
+        <circle cx="120" cy="35" r="5" fill="#1565c0"/><text x="117" y="50" font-size="7">3</text>
+        <circle cx="145" cy="35" r="5" fill="#1565c0"/><text x="142" y="50" font-size="7">3</text>
+        <circle cx="240" cy="35" r="5" fill="#1565c0"/><text x="237" y="50" font-size="7">8</text>
+        <!-- dense window l=0 -->
+        <rect x="5" y="22" width="130" height="16" fill="#ef5350" fill-opacity="0.25" stroke="#ef5350" stroke-width="1.5" rx="2"/>
+        <text x="7" y="21" font-size="6" fill="#ef5350">l=0, c=5≥4</text>
+        <!-- l_dense block -->
+        <rect x="5" y="58" width="65" height="10" fill="#ef5350" fill-opacity="0.5" rx="2"/>
+        <text x="7" y="67" font-size="6" fill="#ef5350">dense block [0, l_dense=1]</text>
+        <text x="7" y="78" font-size="6" fill="#555">l_dense = L[l_lo+(c-θ)] = L[0+(5-4)] = L[1] = 2 → l_dense=2-W=1</text>
+        <!-- (b) non-dense case -->
+        <text x="5" y="100" font-size="8" fill="#e65100" font-weight="bold">(b) 非密集時 c &lt; θ → ギャップジャンプ</text>
+        <line x1="5" y1="118" x2="295" y2="118" stroke="#ccc" stroke-width="1"/>
+        <circle cx="200" cy="118" r="5" fill="#1565c0"/><text x="197" y="132" font-size="7">7</text>
+        <circle cx="240" cy="118" r="5" fill="#1565c0"/><text x="237" y="132" font-size="7">8</text>
+        <!-- gap window -->
+        <rect x="5" y="106" width="150" height="14" fill="#bdbdbd" fill-opacity="0.25" stroke="#bdbdbd" stroke-width="1.5" rx="2"/>
+        <text x="7" y="104" font-size="6" fill="#888">c=0&lt;4 → jump!</text>
+        <!-- arrow jump -->
+        <path d="M 160 113 Q 180 95 200 113" stroke="#e65100" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="165" y="95" font-size="6" fill="#e65100">l←L[next]-W₀</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">2分岐ストライド</div>
+      <table class="mini">
+        <tr><th>状態</th><th>処理</th></tr>
+        <tr>
+          <td><span class="tag green">c≥θ</span><br>密集</td>
+          <td>余剰 (c−θ) でブロック右端を算出<br>一括出力 → l_dense+1 へ</td>
+        </tr>
+        <tr>
+          <td><span class="tag orange">c&lt;θ</span><br>非密集</td>
+          <td>次イベント位置まで<br>ジャンプ</td>
+        </tr>
+      </table>
+      <div class="success-box" style="margin-top:8px; font-size:0.62rem;">
+        <b>補題2</b>: ブロック内の全 l' に対して<br>sup(P,l',W₀)≥θ が保証される
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S10 Full Algorithm -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S10 — Full Algorithm & Complexity</span><span class="slide-no">10 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">アルゴリズム概要</div>
+      <svg width="100%" height="150" viewBox="0 0 290 150">
+        <!-- k=1 block -->
+        <rect x="5" y="5" width="130" height="40" fill="#e8f0fe" stroke="#1565c0" rx="3"/>
+        <text x="10" y="18" font-size="7" fill="#1565c0" font-weight="bold">k=1: 単一アイテム</text>
+        <text x="10" y="30" font-size="7" fill="#555">L_i(s_sp) を全空間開始点で構築</text>
+        <text x="10" y="42" font-size="7" fill="#555">t-stride で R_θ({i}) を計算</text>
+        <!-- arrow -->
+        <text x="140" y="30" font-size="14" fill="#1a3a6e">↓</text>
+        <!-- pruning block -->
+        <rect x="5" y="55" width="130" height="40" fill="#fce4ec" stroke="#c62828" rx="3"/>
+        <text x="10" y="68" font-size="7" fill="#c62828" font-weight="bold">k≥2: 候補生成 + 枝刈り</text>
+        <text x="10" y="80" font-size="7" fill="#555">C(P) = ∩ R_θ(Q)[s_sp]</text>
+        <text x="10" y="92" font-size="7" fill="#555">C(P)=∅ → skip (枝刈り)</text>
+        <!-- arrow -->
+        <text x="140" y="80" font-size="14" fill="#1a3a6e">↓</text>
+        <!-- eval block -->
+        <rect x="5" y="105" width="130" height="35" fill="#e8f5e9" stroke="#2e7d32" rx="3"/>
+        <text x="10" y="118" font-size="7" fill="#2e7d32" font-weight="bold">精密評価</text>
+        <text x="10" y="130" font-size="7" fill="#555">L_P(s_sp) を構築 → t-stride</text>
+        <!-- complexity -->
+        <rect x="150" y="5" width="138" height="135" fill="#f5f5f5" stroke="#ccc" rx="3"/>
+        <text x="155" y="18" font-size="7" fill="#555" font-weight="bold">計算量 O(Σ_{P∈F} (…))</text>
+        <text x="155" y="32" font-size="7" fill="#555">• L_P 構築: O(N_P · W_sp)</text>
+        <text x="155" y="46" font-size="7" fill="#555">• ソート: O(Ñ_P log Ñ_P)</text>
+        <text x="155" y="60" font-size="7" fill="#555">• 区間計算: O(Ñ_P log Ñ_P)</text>
+        <text x="155" y="74" font-size="7" fill="#555">• 候補交差: O(I_P)</text>
+        <text x="155" y="95" font-size="7" fill="#1565c0" font-weight="bold">|F| を支配するのは</text>
+        <text x="155" y="108" font-size="7" fill="#1565c0">Apriori 枝刈り</text>
+        <text x="155" y="120" font-size="7" fill="#555">非密集パターンを</text>
+        <text x="155" y="132" font-size="7" fill="#555">評価なしに除外</text>
+      </svg>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">全体構造</div>
+      <div class="step-row" style="flex-direction:column; gap:5px;">
+        <div class="step-box">k=1 評価</div>
+        <div style="text-align:center; font-size:0.8rem;">↓</div>
+        <div class="step-box" style="background:#c62828;">候補生成 + 枝刈り</div>
+        <div style="text-align:center; font-size:0.8rem;">↓</div>
+        <div class="step-box" style="background:#2e7d32;">精密評価</div>
+        <div style="text-align:center; font-size:0.8rem;">↓ k++</div>
+        <div class="step-box" style="background:#666;">F_{k-1}=∅ で終了</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S11 Experiment overview -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S11 — Experiments Overview</span><span class="slide-no">11 / 18</span>
+  </div>
+  <div class="slide-body" style="align-items:center; justify-content:center;">
+    <div style="display:flex; gap:14px; width:100%;">
+      <div style="flex:1; border:2px solid #1565c0; border-radius:8px; padding:10px; text-align:center; background:#e8f0fe;">
+        <div style="font-size:1.1rem; font-weight:900; color:#1565c0;">EX-1</div>
+        <div style="font-size:0.72rem; color:#333; margin-top:5px;">合成データ<br>既存手法比較</div>
+        <div style="font-size:0.63rem; color:#555; margin-top:6px;">4形状 × 3シード<br>F1 + Jaccard</div>
+      </div>
+      <div style="flex:1; border:2px solid #00695c; border-radius:8px; padding:10px; text-align:center; background:#e8f5e9;">
+        <div style="font-size:1.1rem; font-weight:900; color:#00695c;">EX-2</div>
+        <div style="font-size:0.72rem; color:#333; margin-top:5px;">スケーラビリティ</div>
+        <div style="font-size:0.63rem; color:#555; margin-top:6px;">T / S / d / |I| の<br>4軸を独立に変化</div>
+      </div>
+      <div style="flex:1; border:2px solid #4a148c; border-radius:8px; padding:10px; text-align:center; background:#f3e5f5;">
+        <div style="font-size:1.1rem; font-weight:900; color:#4a148c;">EX-3</div>
+        <div style="font-size:0.72rem; color:#333; margin-top:5px;">実データ適用</div>
+        <div style="font-size:0.63rem; color:#555; margin-top:6px;">犯罪・苦情・地震<br>d=3〜4</div>
+      </div>
+    </div>
+    <div style="margin-top:16px; font-size:0.7rem; color:#555; text-align:center;">
+      実装: Rust (release build) &nbsp;|&nbsp; Apple M3, 8コア, 24GB RAM
+    </div>
+  </div>
+</div>
+
+<!-- S12 EX-1 Setup -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S12 — EX-1: Synthetic Data with 4 Dense Region Shapes</span><span class="slide-no">12 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">4形状の密集領域（T=100 × S=100 グリッド）</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
+        <!-- Shape A Rectangle -->
+        <div style="border:1px solid #ccc; border-radius:4px; padding:4px;">
+          <div style="font-size:0.65rem; font-weight:bold; color:#1565c0; margin-bottom:2px;">Shape A: 矩形</div>
+          <svg width="100%" height="55" viewBox="0 0 100 55">
+            <rect x="0" y="0" width="100" height="55" fill="#f5f5f5"/>
+            <rect x="30" y="10" width="40" height="30" fill="#ef5350" opacity="0.7" rx="2"/>
+            <text x="2" y="52" font-size="7" fill="#555">固定サイズ直交帯</text>
+          </svg>
+        </div>
+        <!-- Shape B Drift -->
+        <div style="border:1px solid #ccc; border-radius:4px; padding:4px;">
+          <div style="font-size:0.65rem; font-weight:bold; color:#6a1b9a; margin-bottom:2px;">Shape B: ドリフト</div>
+          <svg width="100%" height="55" viewBox="0 0 100 55">
+            <rect x="0" y="0" width="100" height="55" fill="#f5f5f5"/>
+            <rect x="10" y="5" width="20" height="18" fill="#ab47bc" opacity="0.7" rx="2"/>
+            <rect x="35" y="15" width="20" height="18" fill="#ab47bc" opacity="0.7" rx="2"/>
+            <rect x="60" y="25" width="20" height="18" fill="#ab47bc" opacity="0.7" rx="2"/>
+            <text x="2" y="52" font-size="7" fill="#555">時間とともに空間シフト</text>
+          </svg>
+        </div>
+        <!-- Shape C Intermittent -->
+        <div style="border:1px solid #ccc; border-radius:4px; padding:4px;">
+          <div style="font-size:0.65rem; font-weight:bold; color:#00695c; margin-bottom:2px;">Shape C: 断続</div>
+          <svg width="100%" height="55" viewBox="0 0 100 55">
+            <rect x="0" y="0" width="100" height="55" fill="#f5f5f5"/>
+            <rect x="10" y="15" width="15" height="20" fill="#26a69a" opacity="0.7" rx="2"/>
+            <rect x="40" y="15" width="15" height="20" fill="#26a69a" opacity="0.7" rx="2"/>
+            <rect x="70" y="15" width="15" height="20" fill="#26a69a" opacity="0.7" rx="2"/>
+            <text x="2" y="52" font-size="7" fill="#555">時間方向に間欠出現</text>
+          </svg>
+        </div>
+        <!-- Shape D Expanding -->
+        <div style="border:1px solid #ccc; border-radius:4px; padding:4px;">
+          <div style="font-size:0.65rem; font-weight:bold; color:#e65100; margin-bottom:2px;">Shape D: 拡大</div>
+          <svg width="100%" height="55" viewBox="0 0 100 55">
+            <rect x="0" y="0" width="100" height="55" fill="#f5f5f5"/>
+            <rect x="10" y="22" width="12" height="8" fill="#ef6c00" opacity="0.7" rx="2"/>
+            <rect x="30" y="18" width="18" height="16" fill="#ef6c00" opacity="0.7" rx="2"/>
+            <rect x="55" y="12" width="28" height="28" fill="#ef6c00" opacity="0.7" rx="2"/>
+            <text x="2" y="52" font-size="7" fill="#555">時間とともに領域が拡大</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">設定</div>
+      <div class="bullet"><ul>
+        <li>各形状3シード（計12 DS）</li>
+        <li>GT = 窓定義の厳密解</li>
+        <li>提案手法: W=(20,5), θ=30</li>
+      </ul></div>
+      <div style="margin-top:8px;" class="section-title">比較手法</div>
+      <div class="bullet"><ul>
+        <li><b>EX-1-1（F1）</b>: Colocation, STCP-Miner</li>
+        <li><b>EX-1-2（Jaccard）</b>: LISA, MZoom, ST-DBSCAN</li>
+        <li>全手法グリッドサーチで最良パラメータ採用</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- S13 EX-1 Results -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S13 — EX-1 Results: Structural Mismatch, Not a Parameter Issue</span><span class="slide-no">13 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">EX-1-1: パターン検出 F1</div>
+      <div class="bar-chart">
+        <div class="bar-row"><div class="bar-label">本手法</div><div class="bar-outer"><div class="bar-inner" style="width:100%; background:#2e7d32;"></div></div><div class="bar-val">1.00 ✓</div></div>
+        <div class="bar-row"><div class="bar-label">STCP-Miner</div><div class="bar-outer"><div class="bar-inner" style="width:91.7%; background:#1565c0;"></div></div><div class="bar-val">0.917</div></div>
+        <div class="bar-row"><div class="bar-label">Colocation</div><div class="bar-outer"><div class="bar-inner" style="width:35.6%; background:#e65100;"></div></div><div class="bar-val">0.356</div></div>
+      </div>
+      <div class="section-title" style="margin-top:8px;">EX-1-2: 密集領域 Jaccard</div>
+      <div class="bar-chart">
+        <div class="bar-row"><div class="bar-label">本手法</div><div class="bar-outer"><div class="bar-inner" style="width:100%; background:#2e7d32;"></div></div><div class="bar-val">1.00 ✓</div></div>
+        <div class="bar-row"><div class="bar-label">ST-DBSCAN</div><div class="bar-outer"><div class="bar-inner" style="width:19%; background:#e65100;"></div></div><div class="bar-val">0.190</div></div>
+        <div class="bar-row"><div class="bar-label">LISA</div><div class="bar-outer"><div class="bar-inner" style="width:10%; background:#e65100;"></div></div><div class="bar-val">≤0.10</div></div>
+        <div class="bar-row"><div class="bar-label">MZoom</div><div class="bar-outer"><div class="bar-inner" style="width:5%; background:#c62828;"></div></div><div class="bar-val">最低</div></div>
+      </div>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">失敗の原因</div>
+      <div class="warn-box" style="margin-bottom:5px; font-size:0.62rem;"><b>LISA</b>: 全時刻集約 → 時間情報を消失</div>
+      <div class="warn-box" style="margin-bottom:5px; font-size:0.62rem;"><b>MZoom</b>: 直積ブロック制約 → 帯を覆うと密度激減 → 幅1に収束</div>
+      <div class="warn-box" style="font-size:0.62rem;"><b>ST-DBSCAN</b>: 非出現セルを系統的に見落とす</div>
+      <div class="success-box" style="margin-top:8px; font-size:0.62rem;">
+        <b>構造的ミスマッチ</b><br>パラメータ調整で<br>解決できない問題
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S14 EX-2 Scalability -->
+<div class="slide teal">
+  <div class="slide-header">
+    <span>S14 — EX-2: Scalability — Linear up to 10⁸ Transactions</span><span class="slide-no">14 / 18</span>
+  </div>
+  <div class="slide-body">
+    <div class="col wide">
+      <div class="section-title">T・S スケーラビリティ（N に対してほぼ線形）</div>
+      <svg width="100%" height="100" viewBox="0 0 290 100">
+        <!-- axes -->
+        <line x1="30" y1="10" x2="30" y2="85" stroke="#555" stroke-width="1.5"/>
+        <line x1="30" y1="85" x2="285" y2="85" stroke="#555" stroke-width="1.5"/>
+        <!-- time bars -->
+        <rect x="40" y="82" width="15" height="3" fill="#1565c0"/>
+        <rect x="90" y="70" width="15" height="15" fill="#1565c0"/>
+        <rect x="140" y="40" width="15" height="45" fill="#1565c0"/>
+        <rect x="190" y="12" width="15" height="73" fill="#1565c0"/>
+        <!-- memory bars -->
+        <rect x="58" y="83" width="15" height="2" fill="#90caf9"/>
+        <rect x="108" y="76" width="15" height="9" fill="#90caf9"/>
+        <rect x="158" y="55" width="15" height="30" fill="#90caf9"/>
+        <rect x="208" y="28" width="15" height="57" fill="#90caf9"/>
+        <!-- x labels -->
+        <text x="43" y="95" font-size="6.5" fill="#555">10⁴</text>
+        <text x="93" y="95" font-size="6.5" fill="#555">10⁵</text>
+        <text x="143" y="95" font-size="6.5" fill="#555">10⁶</text>
+        <text x="193" y="95" font-size="6.5" fill="#555">10⁷</text>
+        <!-- values -->
+        <text x="40" y="80" font-size="5.5" fill="#1565c0">0.05s</text>
+        <text x="90" y="68" font-size="5.5" fill="#1565c0">0.46s</text>
+        <text x="140" y="38" font-size="5.5" fill="#1565c0">5.4s</text>
+        <text x="190" y="10" font-size="5.5" fill="#1565c0">49.5s</text>
+        <!-- legend -->
+        <rect x="230" y="30" width="8" height="8" fill="#1565c0"/>
+        <text x="242" y="38" font-size="6" fill="#555">Time</text>
+        <rect x="230" y="45" width="8" height="8" fill="#90caf9"/>
+        <text x="242" y="53" font-size="6" fill="#555">Memory</text>
+      </svg>
+      <div class="success-box" style="font-size:0.65rem;">
+        N=10⁸（T=10⁶, S=100）→ <b>約9分</b>で処理完了
+      </div>
+    </div>
+    <div class="col narrow">
+      <div class="section-title">4軸まとめ</div>
+      <table class="mini">
+        <tr><th>軸</th><th>傾向</th></tr>
+        <tr><td>T</td><td>線形スケール</td></tr>
+        <tr><td>S</td><td>線形スケール</td></tr>
+        <tr><td>d: 2→4</td><td>W_sp 25倍<br>メモリ 1.35倍のみ</td></tr>
+        <tr><td>|I|: 20→80</td><td>指数より緩やか<br>（Apriori 枝刈り）</td></tr>
+      </table>
+      <div class="highlight-box" style="margin-top:8px; font-size:0.62rem;">
+        d スケールが小さい理由:<br>各空間始点のマルチセットが<b>疎</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S15 EX-3 Real Data -->
+<div class="slide" style="">
+  <div class="slide-header" style="background:#4a148c;">
+    <span>S15 — EX-3: Real Data — Interpretable Insights across Domains</span><span class="slide-no">15 / 18</span>
+  </div>
+  <div class="slide-body" style="flex-direction:column; gap:5px;">
+    <div class="section-title">3ドメイン × d=3〜4 の実データに適用</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; flex:1;">
+      <div class="highlight-box" style="font-size:0.63rem;">
+        <span class="tag" style="background:#c62828;">Chicago Crime d=3</span><br>
+        ASSAULT + BATTERY →<br>
+        <b>南部・西部に慢性的密集ウィンドウ</b><br>
+        3種複合: THEFT+CD+BATTERY → 単独分析では見落とすホットスポット
+      </div>
+      <div class="highlight-box" style="font-size:0.63rem;">
+        <span class="tag" style="background:#1565c0;">NYPD Crime d=3</span><br>
+        重罪 + 軽犯罪の複合共起を<br>
+        <b>区・週単位</b>で把握<br>
+        &nbsp;
+      </div>
+      <div class="highlight-box" style="font-size:0.63rem;">
+        <span class="tag" style="background:#00695c;">NYC 311 d=3</span><br>
+        騒音苦情 + 違法駐車 →<br>
+        <b>住宅密集地区に繰り返し出現</b>
+      </div>
+      <div class="highlight-box" style="font-size:0.63rem;">
+        <span class="tag" style="background:#4a148c;">USGS Earthquake d=4</span><br>
+        深さ軸を含む4次元記述 →<br>
+        <b>浅発地震 vs 中深発地震</b>を<br>深さ軸で分離して識別
+      </div>
+    </div>
+    <div class="success-box" style="font-size:0.65rem; margin-top:2px;">
+      「どのアイテムセットが、いつ・どこで密集するか」を具体的な時空間ウィンドウとして出力 → ドメイン専門家が解釈可能
+    </div>
+  </div>
+</div>
+
+<!-- S16 Summary -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S16 — Summary</span><span class="slide-no">16 / 18</span>
+  </div>
+  <div class="slide-body" style="flex-direction:column; gap:8px;">
+    <div class="section-title">Multi-Dimensional Apriori-Window</div>
+    <div class="step-row">
+      <div class="step-box" style="background:#1565c0; font-size:0.6rem;">1D還元</div>
+      <div class="step-arrow">+</div>
+      <div class="step-box" style="background:#6a1b9a; font-size:0.6rem;">interval map 交差</div>
+      <div class="step-arrow">+</div>
+      <div class="step-box" style="background:#00695c; font-size:0.6rem;">t-ストライド</div>
+      <div class="step-arrow">=</div>
+      <div class="step-box" style="background:#c62828; font-size:0.6rem;">d 次元密集領域<br>厳密列挙</div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:4px;">
+      <div class="success-box" style="flex:1; text-align:center;">
+        <div style="font-size:1rem; font-weight:900; color:#2e7d32;">F1 = 1.00</div>
+        <div style="font-size:0.62rem;">Jaccard = 1.00</div>
+        <div style="font-size:0.6rem; color:#555;">既存: F1≤0.917, J≤0.190</div>
+      </div>
+      <div class="success-box" style="flex:1; text-align:center;">
+        <div style="font-size:1rem; font-weight:900; color:#2e7d32;">線形スケール</div>
+        <div style="font-size:0.62rem;">N=10⁴〜10⁸</div>
+        <div style="font-size:0.6rem; color:#555;">10⁸を約9分</div>
+      </div>
+      <div class="success-box" style="flex:1; text-align:center;">
+        <div style="font-size:1rem; font-weight:900; color:#2e7d32;">実データ</div>
+        <div style="font-size:0.62rem;">d=3〜4</div>
+        <div style="font-size:0.6rem; color:#555;">犯罪・地震・苦情</div>
+      </div>
+    </div>
+    <div class="warn-box" style="font-size:0.65rem; margin-top:2px;">
+      <b>制約：</b>グリッド離散化依存 / 高次元で O(N·W_sp) コスト増大 / 検出に特化（因果分析は対象外）
+    </div>
+  </div>
+</div>
+
+<!-- S17 Future Work -->
+<div class="slide blue">
+  <div class="slide-header">
+    <span>S17 — Future Work</span><span class="slide-no">17 / 18</span>
+  </div>
+  <div class="slide-body" style="align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+    <div style="display:flex; gap:12px; width:100%;">
+      <div style="flex:1; border:2px solid #1565c0; border-radius:8px; padding:10px; background:#e8f0fe;">
+        <div style="font-size:0.75rem; font-weight:bold; color:#1565c0; margin-bottom:5px;">1. 適応的パラメータ選択</div>
+        <div style="font-size:0.63rem; color:#333;">局所密度統計（密度分布・空間自己相関）から W と θ を自動設定するフレームワーク</div>
+      </div>
+      <div style="flex:1; border:2px solid #00695c; border-radius:8px; padding:10px; background:#e8f5e9;">
+        <div style="font-size:0.75rem; font-weight:bold; color:#00695c; margin-bottom:5px;">2. 高速化</div>
+        <div style="font-size:0.63rem; color:#333;">累積和による O(1) ウィンドウ集約<br>スライス差分による空間軸差分更新 → 冗長計算を排除</div>
+      </div>
+      <div style="flex:1; border:2px solid #4a148c; border-radius:8px; padding:10px; background:#f3e5f5;">
+        <div style="font-size:0.75rem; font-weight:bold; color:#4a148c; margin-bottom:5px;">3. イベント帰属との統合</div>
+        <div style="font-size:0.63rem; color:#333;">検出した密集領域を外部イベントへ帰属させる因果分析パイプライン（Phase 2）</div>
+      </div>
+    </div>
+    <div style="font-size:0.68rem; color:#555; text-align:center; margin-top:6px;">
+      実装公開: https://github.com/kanatakayasu/Multi-Dimensional-Apriori-Window
+    </div>
+  </div>
+</div>
+
+<!-- S18 Q&A -->
+<div class="slide blue">
+  <div class="slide-header" style="background:#212121;">
+    <span>S18 — Thank you / Q&A</span><span class="slide-no">18 / 18</span>
+  </div>
+  <div class="slide-body" style="align-items:center; justify-content:center; flex-direction:column; background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff;">
+    <div style="font-size:1.1rem; font-weight:900; color:#a0c4ff; text-align:center; line-height:1.5;">Multi-Dimensional Apriori-Window:<br>Exact Mining of Dense Itemset Regions<br>over Arbitrary Dimensions</div>
+    <div style="margin-top:20px; font-size:0.72rem; color:#ccc;">DSAA 2026</div>
+    <div style="margin-top:16px; font-size:0.75rem; color:#a0c4ff; font-weight:bold;">Questions?</div>
+    <div style="margin-top:12px; font-size:0.65rem; color:#aaa;">github.com/kanatakayasu/Multi-Dimensional-Apriori-Window</div>
+  </div>
+</div>
+
+</div><!-- end slide-grid -->
+</body>
+</html>

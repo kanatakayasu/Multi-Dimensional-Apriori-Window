@@ -1,0 +1,150 @@
+% ==============================================================
+% Multi-Dimensional Apriori-Window: Exact Mining of Dense Itemset
+% Regions over Arbitrary Dimensions
+% ==============================================================
+% Compile:
+%   pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
+% ==============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% --- Standard packages ---
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{threeparttable}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{bm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit}
+
+% --- Theorem environments ---
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\title{Multi-Dimensional Apriori-Window: \\
+Exact Mining of Dense Itemset Regions\\
+over Arbitrary Dimensions}
+
+\author{
+  \IEEEauthorblockN{Kanata Takayasu}
+  \IEEEauthorblockA{
+    \textit{Keio University}\\
+    Yokohama, Japan\\
+    kanata1222@keio.jp}
+  \and
+  \IEEEauthorblockN{Taihei Takahashi}
+  \IEEEauthorblockA{
+    \textit{Keio University}\\
+    Yokohama, Japan\\
+    taihei-t@keio.jp}
+  \and
+  \IEEEauthorblockN{Satoshi Suga}
+  \IEEEauthorblockA{
+    \textit{Kansai University}\\
+    Osaka, Japan\\
+    stssg526@gmail.com}
+  \and
+  \IEEEauthorblockN{Satoshi Kurihara}
+  \IEEEauthorblockA{
+    \textit{Keio University}\\
+    Yokohama, Japan\\
+    satoshi@keio.jp}
+}
+
+\maketitle
+\pagestyle{empty}
+
+\begin{abstract}
+In large-scale retail, epidemiology, and logistics data,
+analysts need to determine both
+\emph{what} is dense (itemsets) and
+\emph{when and where} it is dense (spatio-temporal regions)
+simultaneously.
+However, existing methods cannot achieve both:
+pattern mining methods do not output regions,
+while region extraction methods (e.g., M-Zoom)
+cannot be integrated with itemset enumeration
+due to their Cartesian-product block constraints
+and lack of anti-monotonicity.
+This paper proposes \textbf{Multi-Dimensional Apriori-Window},
+which exactly extracts all dense itemsets together with
+their dense regions over arbitrary $d$-dimensional grids.
+By reducing the multi-dimensional problem
+to a duplicate-aware one-dimensional problem
+for each fixed spatial start point,
+and by exploiting the anti-monotonicity
+of windowed support counts for Apriori pruning,
+the method exactly enumerates all dense patterns
+together with their arbitrarily-shaped dense regions.
+
+The proposed method also exactly extracts all dense patterns
+and their dense regions by construction
+(F1 $= 1.00$, Jaccard $= 1.00$).
+Comparative experiments on synthetic data
+with diverse embedded dense-region shapes
+show that pattern mining baselines achieve
+a pattern detection F1 of only 0.356--0.917,
+with substantial variation depending on the region shape.
+Region extraction baselines (MZoom, LISA, ST-DBSCAN),
+even when given ground truth patterns,
+achieve mean Jaccard $\leq$ 0.190,
+failing to closely approximate the sliding-window dense regions.
+In contrast, scalability experiments reveal
+the proposed method achieves linear scaling
+over four orders of magnitude
+($N = 10^4$--$10^8$ transactions),
+processing $10^8$ transactions within 9 minutes.
+When applied to $d{=}3$--$4$ real-world data from crime,
+complaints, and earthquake domains,
+the method yields interpretable insights
+consistent with domain knowledge.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Frequent pattern mining, multi-dimensional data, sliding window,
+dense region detection, Apriori, interval representation
+\end{IEEEkeywords}
+
+\input{sec/01_intro}
+\input{sec/02_related_work}
+\input{sec/03_problem_definition}
+\input{sec/04_proposed_method}
+\input{sec/05_experiments}
+\input{sec/07_conclusion}
+
+% --- Acknowledgment ---
+\section*{Acknowledgments}
+This work is supported by the Honda Bridge Project.
+The authors also acknowledge that portions of the text in
+this paper were generated with Anthropic's large language
+model Claude~\cite{claude2025}.
+
+% --- References ---
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+% --- Appendix ---
+\clearpage
+\appendices
+\input{sec/07_appendix}
+
+\end{document}
