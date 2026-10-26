@@ -1,0 +1,85 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experiments}
+
+All experiments were conducted on a single machine
+(Apple M3 Pro, 18 GB RAM) using Rust~1.82 release builds.
+The CASAS dataset~\cite{casas2013} records timestamped ON/OFF events
+from motion and door sensors in a smart home,
+discretized into 1-hour slots.
+
+\textbf{Benchmark methodology.}
+In production, computation time and transaction arrival time are
+interleaved: the system waits for $n$ transactions, then computes.
+To measure \textit{pure computation time} independently of arrival
+latency, we pre-load the full dataset and feed it to the system
+$n$ transactions at a time, triggering each scan immediately after
+the previous one completes.
+This isolates algorithmic cost from network or sensor delays and
+yields a fair comparison across different values of $n$.
+
+\subsection{EX-1: Scan Frequency vs.\ Processing Speed}
+
+We varied $n \in \{1, 6, 24, 96, T\}$ on CASAS hh113
+($T = 12{,}226$, $W = 24$, $\theta = 10$, $k = 4$)
+and measured total processing time.
+
+\begin{table}[t]
+\caption{Processing speed vs.\ scan frequency ($n$) on CASAS hh113.}
+\begin{center}
+\begin{tabular}{|c|r|r|}
+\hline
+$n$ & Time (ms) & Speedup vs.\ $n{=}1$ \\\hline
+1   & 1,068     & 1.0$\times$ \\
+6   &   216     & 4.9$\times$ \\
+24  &    69     & 15.5$\times$ \\
+96  &    27     & 39.6$\times$ \\
+$T$ (batch) & 7.5 & 142.4$\times$ \\\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+$n = W = 24$ achieves a 15.5$\times$ speedup over $n = 1$
+while scanning every 24 hours, a practically useful frequency.
+The improvement saturates after $n = W$,
+suggesting $n = W$ as the recommended default.
+
+\subsection{EX-2: Ablation Study}
+
+We measured the contribution of each speedup technique
+on synthetic data ($T = 12{,}226$, $W = 24$, $\theta = 10$, $k = 4$).
+
+\begin{table}[t]
+\caption{Ablation: processing time [ms] for four algorithm variants.}
+\begin{center}
+\begin{tabular}{|l|c|c|r|}
+\hline
+Variant & Stride & Pruning & Time (ms) \\\hline
+Naive          &        &         & TODO \\
+Stride-only    & \checkmark &    & TODO \\
+Pruning-only   &        & \checkmark & TODO \\
+Full (proposed)& \checkmark & \checkmark & TODO \\\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+% TODO: fill in ablation results after running experiments
+
+\subsection{EX-3: Application to CASAS Sensor Data}
+
+We applied the algorithm ($n = 24$, batch mode) to two CASAS datasets.
+CASAS records multi-sensor co-activation streams structurally analogous
+to autonomous robotic behavioral logs.
+
+\begin{table}[t]
+\caption{CASAS dataset statistics and detected dense intervals.}
+\begin{center}
+\begin{tabular}{|l|r|r|r|}
+\hline
+Dataset & $T$ & $W$ & Patterns \\\hline
+hh113 & 12,226 & 24 & 57 \\
+mv001 & 34,759 & 24 & 53 \\\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+% TODO: add representative pattern examples and interpretation

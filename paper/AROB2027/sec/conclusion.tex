@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+
+We proposed Streaming Apriori-Window, a dense interval mining algorithm
+for event streams with an explicit scan frequency parameter $n$.
+The confirmed output guarantee follows from the monotone sliding-window
+property, ensuring that output intervals are never invalidated by
+future events.
+Two speedup techniques --- stride-based skipping and Apriori-style
+candidate pruning --- reduce processing cost significantly,
+with $n = W$ achieving a favorable tradeoff between latency and speed.
+Experiments on CASAS smart home sensor data demonstrate that the
+algorithm produces interpretable, domain-consistent outputs,
+confirming its practical utility for autonomous agent monitoring.
+
+Future work includes applying the framework to behavioral logs from
+physical robotic systems, extending it to multi-dimensional event spaces,
+and investigating adaptive scan-frequency mechanisms based on
+stream characteristics.

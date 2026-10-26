@@ -102,6 +102,12 @@ cd apriori_window_md
   - EX-3: CASAS 実データ適用（hh113, mv001）
 - **主要ファイル**: `apriori_window_1d/`, `dataset/casas/`, `paper/AROB2027/`
 
+> **重要（論文ポジショニング）**:
+> AROB 2027 論文では、1D アルゴリズム（Apriori-Window）をこの論文で**初めて提唱する**体で書く。
+> arxiv:2604.24122 は「既存研究」でも「先行研究」でもなく、この論文そのものの前身。
+> したがって **arxiv:2604.24122 を AROB 2027 論文内で引用してはいけない**。
+> Related Work に載せる既存手法は LPFIM / LPPM / RPM / GLFMiner / SIM など他者の手法のみ。
+
 ### DSAA 2026（多次元バッチ）
 
 - **タイトル**: Multi-Dimensional Apriori-Window: Exact Mining of Dense Itemset Regions over Arbitrary Dimensions

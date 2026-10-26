@@ -1,0 +1,41 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+
+\subsection{Frequent Itemset Mining}
+
+Apriori~\cite{agrawal1994fast} and FP-Growth~\cite{han2000mining}
+are foundational methods for mining frequent itemsets.
+ECLAT~\cite{zaki1997new} offers a vertical data format alternative.
+A comprehensive survey of FIM is given in~\cite{fournier2017survey}.
+All of these methods evaluate support over the entire dataset and
+cannot detect itemsets that occur at high frequency only within
+specific time intervals.
+
+\subsection{Dense Interval Mining}
+
+Methods that output patterns together with their dense intervals
+fall into two categories.
+\textit{Occurrence-gap-based} methods include
+LPFIM~\cite{yin2014lpfim}, LPPM~\cite{saleh2011lppm}, and
+RPM~\cite{kiran2017rpm}.
+LPFIM partitions intervals when occurrence gaps reach a threshold;
+LPPM introduces cumulative spillover for noise-robust detection;
+RPM groups consecutive occurrences with gaps within a maximum period.
+These methods indirectly estimate density through gap constraints
+or periodicity thresholds, making parameter tuning difficult and
+results inexact with respect to the direct sliding-window frequency.
+\textit{Direct} approaches include GLFMiner~\cite{fournierviger2021glf},
+which mines patterns at fixed temporal granularities and thus cannot
+identify intervals of arbitrary width, and SIM~\cite{kiran2015sim},
+which returns only the single optimal interval per itemset.
+None of these methods support streaming or provide a mechanism
+to control scan frequency.
+
+\subsection{Stream Mining}
+
+Sliding-window-based stream mining has been studied in
+incremental FIM~\cite{lee2001sliding,leung2006dstree},
+where windows limit the temporal scope of support computation.
+However, these methods still report global support within the window
+and do not enumerate all dense sub-intervals.
+

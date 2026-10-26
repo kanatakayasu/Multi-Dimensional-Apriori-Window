@@ -1,0 +1,67 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorithm}
+
+\subsection{Monotone Scan}
+
+For a fixed itemset $X$, let $\mathbf{p} = (p_0, p_1, \ldots)$ be the sorted
+list of timestamps at which $X$ occurs.
+We scan the left endpoint $l$ from $0$ to the current position,
+maintaining a pointer into $\mathbf{p}$.
+
+\textbf{Key property}: as $l$ increases by one, the window $[l, l+W)$
+loses $T_{l-1}$ and may gain $T_{l+W-1}$.
+Consequently, $\mathrm{freq}(X, l)$ changes by at most $\pm 1$ per step,
+and the left endpoint $l$ is monotonically non-decreasing.
+This means any confirmed output is never invalidated.
+
+\subsection{Stride-Based Skipping}
+
+Na\"ively incrementing $l$ by 1 each step is wasteful.
+We exploit two cases:
+
+\textbf{Dense phase}: if $\mathrm{freq}(X, l) \geq \theta$,
+the next non-dense position is at least $l + \mathrm{surplus}$, where
+$\mathrm{surplus} = \mathrm{freq}(X, l) - \theta + 1$.
+We skip ahead by $\mathrm{surplus}$ steps.
+
+\textbf{Non-dense phase}: if $\mathrm{freq}(X, l) < \theta$,
+the next potentially dense position requires
+$\theta - \mathrm{freq}(X, l)$ additional occurrences.
+We advance $l$ to the position of the $(\theta - \mathrm{deficit})$-th
+next occurrence, skipping the deficit gap.
+
+\subsection{Apriori-Style Candidate Pruning}
+
+For itemset $X$ of size $k$, if any $(k{-}1)$-subset $Y \subset X$
+has no dense interval intersecting $[l, l+W)$, then $X$ cannot be
+dense in $[l, l+W)$ either (by the anti-monotonicity of support).
+We precompute, for each $(k{-}1)$-subset, the set of $l$-values that
+are dense, and restrict candidate scan ranges for $X$ to the
+intersection of its subsets' dense ranges.
+
+\subsection{n-Step Streaming}
+
+In the target deployment, transactions arrive continuously from a
+sensor stream or autonomous agent log and are appended to a database.
+The system waits until $n$ new transactions have accumulated since the
+last scan, then triggers a mining step.
+The parameter $n$ directly controls output latency: smaller $n$ yields
+more responsive output at higher computational cost; larger $n$ batches
+more events per scan, reducing cost.
+Setting $n = T$ (full stream length) recovers batch processing as a
+special case.
+
+Each scan step proceeds as follows:
+
+\begin{enumerate}
+  \item When $n$ new transactions have arrived (current position $s$),
+        retrieve the buffer $[s - W + 1,\; s + n)$, retaining the
+        $W{-}1$ most recent transactions from the previous step to
+        prevent boundary loss.
+  \item Run the monotone scan with stride-based skipping and
+        Apriori-style pruning over this buffer.
+  \item Emit all intervals $(X, [l_s, l_e])$ with $l_e + W \leq s$
+        not yet output: these are \textbf{confirmed} and will not
+        change as future transactions arrive.
+  \item Advance to the next accumulation of $n$ transactions and repeat.
+\end{enumerate}

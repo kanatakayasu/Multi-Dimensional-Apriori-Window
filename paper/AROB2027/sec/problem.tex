@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Problem Formulation}
+
+Let $\mathcal{I}$ be a finite set of items.
+An \textbf{event stream} is a sequence of transactions
+$T_0, T_1, T_2, \ldots$, where each $T_t \subseteq \mathcal{I}$.
+We associate each transaction with a discrete timestamp $t \in \mathbb{Z}_{\geq 0}$.
+
+\subsection{Dense Interval}
+
+Given a window width $W \in \mathbb{Z}_{>0}$ and a threshold $\theta \in \mathbb{Z}_{>0}$,
+the \textbf{occurrence frequency} of an itemset $X \subseteq \mathcal{I}$
+in window $[l, l+W)$ is
+\[
+  \mathrm{freq}(X, l) = |\{t \in [l, l+W) : X \subseteq T_t\}|.
+\]
+A window $[l, l+W)$ is \textbf{dense} for $X$ if $\mathrm{freq}(X, l) \geq \theta$.
+A \textbf{dense interval} for $X$ is a maximal contiguous range
+$[l_s, l_e]$ such that $[l, l+W)$ is dense for $X$ for all $l \in [l_s, l_e]$.
+
+\subsection{Streaming Dense Interval Mining}
+
+Given an event stream $T_0, T_1, \ldots$, parameters $W$, $\theta$, and
+a scan frequency $n \in \mathbb{Z}_{>0}$, the task is to enumerate,
+at each scan step $s = 0, n, 2n, \ldots$, all dense intervals
+$(X, [l_s, l_e])$ whose right endpoint satisfies $l_e + W \leq s$,
+without revisiting previously output intervals.
+We call such output \textbf{confirmed}: because the sliding window
+advances monotonically, intervals ending before position $s$
+cannot change with future transactions.
+
+The parameter $n$ controls the tradeoff:
+$n = 1$ yields minimal latency at maximum cost;
+$n = T$ (full stream length) reduces to batch processing.

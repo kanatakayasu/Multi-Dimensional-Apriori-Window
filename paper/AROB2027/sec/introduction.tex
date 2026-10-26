@@ -1,0 +1,32 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+Autonomous AI systems and robotic agents generate streams of sensor events
+that encode behavioral patterns.
+Understanding \textit{when} these patterns densely co-occur --- not merely whether
+they exist globally --- is essential for real-time monitoring, anomaly detection,
+and adaptive control in intelligent environments.
+In multi-agent systems and sensor-equipped robotic platforms,
+detecting that a specific set of events repeatedly clusters within particular
+time intervals can reveal coordinated behaviors, routine structures,
+or emerging anomalies that demand timely response.
+The approach also has broad applicability across domains such as retail and epidemiology.
+
+We propose \textit{Streaming Apriori-Window}, a dense interval mining
+algorithm for event streams parameterized by a scan frequency $n$.
+The algorithm identifies all time intervals in which itemset occurrence
+frequency within a fixed-width sliding window meets a threshold.
+Two speedup techniques --- stride-based skipping and Apriori-style
+candidate pruning --- are incorporated to achieve practical processing speed.
+
+The main contributions of this paper are as follows:
+\begin{itemize}
+  \item We formalize the streaming dense interval mining problem with
+        an explicit scan frequency parameter $n$ that controls the tradeoff
+        between output latency and processing cost.
+  \item We prove a confirmed output guarantee: intervals ending before
+        the current scan position are unaffected by future events.
+  \item We evaluate the algorithm on synthetic and real-world CASAS
+        smart home sensor data, demonstrating practical processing speed
+        and interpretable outputs.
+\end{itemize}

@@ -1,0 +1,125 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[fleqn,10pt,twocolumn]{AROB}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\title{Streaming Apriori-Window: Mining Dense Patterns\\
+       from Streaming Data for Autonomous Agent Monitoring}
+
+\author{Kanata Takayasu${}^{1\dagger}$, Taihei Takahashi${}^{1}$,
+        Satoshi Suga${}^{2}$, and Satoshi Kurihara${}^{1}$}
+% The dagger symbol indicates the presenter.
+\speaker{Kanata Takayasu}
+
+\affils{${}^{1}$Keio University, Yokohama, Japan\\
+${}^{2}$Kansai University, Osaka, Japan\\
+}
+
+\abstract{%
+Autonomous AI systems and robotic agents generate streams of sensor events
+whose co-occurrence patterns reveal behavioral regularities.
+Detecting \textit{when} these patterns densely co-occur requires a
+streaming-capable interval mining framework with controllable output latency.
+We propose Streaming Apriori-Window, parameterized by a scan frequency $n$,
+which identifies all time intervals where itemset frequency in a
+fixed-width sliding window meets a threshold.
+A confirmed output guarantee follows from the monotone scan property.
+Two speedup techniques --- stride-based skipping and Apriori-style
+candidate pruning --- achieve practical processing speed.
+Experiments show that $n = W$ achieves a 15.5$\times$ speedup over $n = 1$
+with a 24-hour scan interval, and that results on CASAS smart home sensor
+data are interpretable and domain-consistent.%
+}
+
+\keywords{%
+data stream mining, pattern recognition, sensor data analysis,
+behavior analysis, intelligent monitoring%
+}
+
+\begin{document}
+
+\maketitle
+
+%-----------------------------------------------------------------------
+
+\input{sec/introduction}
+
+\input{sec/related}
+
+\input{sec/problem}
+
+\input{sec/algorithm}
+
+\input{sec/experiments}
+
+\input{sec/conclusion}
+
+%-----------------------------------------------------------------------
+%%%%%%%%%%%%%%%%% BIBLIOGRAPHY IN THE LaTeX file !!!!! %%%%%%%%%%%%%%%%%%%%%%
+
+\begin{thebibliography}{99}
+
+\bibitem{agrawal1994fast}
+R. Agrawal and R. Srikant,
+``Fast algorithms for mining association rules,''
+{\it Proc. VLDB}, pp.~487--499, 1994.
+
+\bibitem{zaki1997new}
+M. J. Zaki, S. Parthasarathy, M. Ogihara, and W. Li,
+``New algorithms for fast discovery of association rules,''
+{\it Proc. KDD}, pp.~283--296, 1997.
+
+\bibitem{han2000mining}
+J. Han, J. Pei, and Y. Yin,
+``Mining frequent patterns without candidate generation,''
+{\it ACM SIGMOD Record}, vol.~29, no.~2, pp.~1--12, 2000.
+
+\bibitem{fournier2017survey}
+P. Fournier-Viger, J. C.-W. Lin, B. Vo, T. T. Chi, J. Zhang, and H. B. Le,
+``A survey of itemset mining,''
+{\it WIREs Data Mining Knowl. Discov.}, vol.~7, no.~4, e1207, 2017.
+
+\bibitem{yin2014lpfim}
+K.-C. Yin, Y.-L. Hsieh, D.-L. Yang, and M.-C. Hung,
+``Association rule mining considering local frequent patterns with temporal intervals,''
+{\it Applied Mathematics \& Information Sciences}, vol.~8, no.~4,
+pp.~1879--1890, 2014.
+
+\bibitem{saleh2011lppm}
+B. Saleh and F. Masseglia,
+``Discovering frequent behaviors: Time is an essential element of the context,''
+{\it Knowledge and Information Systems}, vol.~28, no.~2, pp.~311--331, 2011.
+
+\bibitem{kiran2017rpm}
+R. U. Kiran, J. Venkatesh, M. Toyoda, M. Kitsuregawa, and P. K. Reddy,
+``Discovering partial periodic-frequent patterns in a transactional database,''
+{\it J. Systems and Software}, vol.~125, pp.~170--182, 2017.
+
+\bibitem{fournierviger2021glf}
+P. Fournier-Viger {\it et al.},
+``Mining local periodic patterns in a discrete sequence,''
+{\it Information Sciences}, vol.~544, pp.~519--548, 2021.
+
+\bibitem{kiran2015sim}
+R. U. Kiran, H. Shang, M. Toyoda, and M. Kitsuregawa,
+``Discovering recurring patterns in time series,''
+{\it Proc. EDBT}, pp.~97--108, 2015.
+
+\bibitem{lee2001sliding}
+C.-H. Lee, C.-R. Lin, and M.-S. Chen,
+``Sliding-window filtering: An efficient algorithm for incremental mining,''
+{\it Proc. CIKM}, pp.~263--270, 2001.
+
+\bibitem{leung2006dstree}
+C. K.-S. Leung and Q. I. Khan,
+``DSTree: A tree structure for the mining of frequent sets from data streams,''
+{\it Proc. ICDM}, pp.~928--932, 2006.
+
+\bibitem{casas2013}
+D. Cook,
+``CASAS: A smart home in a box,''
+{\it IEEE Computer}, vol.~46, no.~7, pp.~62--69, 2013.
+
+\end{thebibliography}
+
+\end{document}
