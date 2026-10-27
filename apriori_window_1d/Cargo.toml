@@ -15,6 +15,10 @@ path = "src/main.rs"
 name = "streaming_benchmark"
 path = "src/bin/streaming_benchmark.rs"
 
+[[bin]]
+name = "ablation"
+path = "src/bin/ablation.rs"
+
 [dependencies]
 itertools = "0.14"
 rayon = "1.11"

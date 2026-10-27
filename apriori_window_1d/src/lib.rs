@@ -6,12 +6,15 @@ pub mod io;
 pub mod util;
 
 pub use apriori::{
-    compute_item_timestamps_map, find_dense_itemsets, generate_candidates, prune_candidates,
+    compute_item_timestamps_map, find_dense_itemsets, find_dense_itemsets_naive,
+    find_dense_itemsets_pruning_only, find_dense_itemsets_stride_only, generate_candidates,
+    prune_candidates,
 };
 pub use interval::{
-    compute_dense_intervals, compute_dense_intervals_multiset,
-    compute_dense_intervals_with_candidates, compute_dense_intervals_with_candidates_multiset,
-    find_covering_interval, insert_and_merge_interval, is_interval_covered,
+    compute_dense_intervals, compute_dense_intervals_multiset, compute_dense_intervals_naive,
+    compute_dense_intervals_naive_with_candidates, compute_dense_intervals_with_candidates,
+    compute_dense_intervals_with_candidates_multiset, find_covering_interval,
+    insert_and_merge_interval, is_interval_covered,
 };
 pub use io::{read_text_file_as_2d_vec_of_integers, write_output_csv};
 pub use util::{intersect_interval_lists, intersect_sorted_lists, lower_bound, upper_bound};

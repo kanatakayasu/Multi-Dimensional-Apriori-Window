@@ -40,6 +40,86 @@ pub fn insert_and_merge_interval(intervals: &mut Vec<(i64, i64)>, new_interval: 
 // Dense interval computation
 // ---------------------------------------------------------------------------
 
+fn collapse_dense_lefts(window_size: i64, dense_lefts: &[i64]) -> Vec<(i64, i64)> {
+    if dense_lefts.is_empty() {
+        return Vec::new();
+    }
+    let mut intervals = Vec::new();
+    let mut block_start = dense_lefts[0];
+    let mut block_end = dense_lefts[0];
+    for &l in dense_lefts.iter().skip(1) {
+        if l == block_end + 1 {
+            block_end = l;
+        } else {
+            intervals.push((block_start, block_end + window_size));
+            block_start = l;
+            block_end = l;
+        }
+    }
+    intervals.push((block_start, block_end + window_size));
+    intervals
+}
+
+/// Naive l++ scan with no stride skipping. Used as the baseline in ablation studies.
+pub fn compute_dense_intervals_naive(
+    timestamps: &[i64],
+    window_size: i64,
+    threshold: usize,
+) -> Vec<(i64, i64)> {
+    if window_size < 1 || threshold < 1 {
+        panic!("window_size and threshold must be >= 1");
+    }
+    if timestamps.is_empty() {
+        return Vec::new();
+    }
+    let ts = timestamps;
+    let ts_last = *ts.last().unwrap();
+    let mut dense_lefts = Vec::new();
+    for l in 0..=ts_last {
+        let start_idx = lower_bound(ts, l);
+        let end_idx = upper_bound(ts, l + window_size);
+        if end_idx - start_idx >= threshold {
+            dense_lefts.push(l);
+        }
+    }
+    collapse_dense_lefts(window_size, &dense_lefts)
+}
+
+/// Naive l++ scan restricted to candidate ranges. Used in Pruning-only variant.
+pub fn compute_dense_intervals_naive_with_candidates(
+    timestamps: &[i64],
+    window_size: i64,
+    threshold: usize,
+    candidate_ranges: &[(i64, i64)],
+) -> Vec<(i64, i64)> {
+    if window_size < 1 || threshold < 1 {
+        panic!("window_size and threshold must be >= 1");
+    }
+    if timestamps.is_empty() || candidate_ranges.is_empty() {
+        return Vec::new();
+    }
+    let ts = timestamps;
+    let ts_last = *ts.last().unwrap();
+    let mut dense_lefts = Vec::new();
+    for &(raw_start, raw_end) in candidate_ranges {
+        let start = raw_start.max(0);
+        let end = raw_end.min(ts_last);
+        if start > end {
+            continue;
+        }
+        for l in start..=end {
+            let start_idx = lower_bound(ts, l);
+            let end_idx = upper_bound(ts, l + window_size);
+            if end_idx - start_idx >= threshold {
+                dense_lefts.push(l);
+            }
+        }
+    }
+    dense_lefts.sort_unstable();
+    dense_lefts.dedup();
+    collapse_dense_lefts(window_size, &dense_lefts)
+}
+
 fn earliest_dense_left(
     timestamps: &[i64],
     start_idx: usize,
@@ -471,61 +551,10 @@ pub fn compute_dense_intervals_with_candidates_multiset(
 mod tests {
     use super::{
         compute_dense_intervals, compute_dense_intervals_multiset,
-        compute_dense_intervals_with_candidates, compute_dense_intervals_with_candidates_multiset,
-        upper_bound,
+        compute_dense_intervals_naive, compute_dense_intervals_with_candidates,
+        compute_dense_intervals_with_candidates_multiset, upper_bound,
     };
     use crate::util::lower_bound;
-
-    fn collapse_dense_lefts(ts: &[i64], window_size: i64, dense_lefts: &[i64]) -> Vec<(i64, i64)> {
-        let _ = ts; // timestamps not needed for endpoint; endpoint = block_end + window_size
-        if dense_lefts.is_empty() {
-            return Vec::new();
-        }
-
-        let mut intervals = Vec::new();
-        let mut block_start = dense_lefts[0];
-        let mut block_end = dense_lefts[0];
-
-        for &l in dense_lefts.iter().skip(1) {
-            if l == block_end + 1 {
-                block_end = l;
-                continue;
-            }
-
-            intervals.push((block_start, block_end + window_size));
-            block_start = l;
-            block_end = l;
-        }
-
-        intervals.push((block_start, block_end + window_size));
-        intervals
-    }
-
-    fn compute_dense_intervals_naive(
-        timestamps: &[i64],
-        window_size: i64,
-        threshold: usize,
-    ) -> Vec<(i64, i64)> {
-        if window_size < 1 || threshold < 1 {
-            panic!("window_size and threshold must be >= 1");
-        }
-        if timestamps.is_empty() {
-            return Vec::new();
-        }
-
-        let ts = timestamps;
-        let ts_last = *ts.last().expect("timestamps should not be empty");
-        let mut dense_lefts = Vec::new();
-        for l in 0..=ts_last {
-            let start_idx = lower_bound(ts, l);
-            let end_idx = upper_bound(ts, l + window_size);
-            let count = end_idx - start_idx;
-            if count >= threshold {
-                dense_lefts.push(l);
-            }
-        }
-        collapse_dense_lefts(ts, window_size, &dense_lefts)
-    }
 
     fn compute_dense_intervals_with_candidates_naive(
         timestamps: &[i64],
@@ -533,34 +562,12 @@ mod tests {
         threshold: usize,
         candidate_ranges: &[(i64, i64)],
     ) -> Vec<(i64, i64)> {
-        if window_size < 1 || threshold < 1 {
-            panic!("window_size and threshold must be >= 1");
-        }
-        if timestamps.is_empty() || candidate_ranges.is_empty() {
-            return Vec::new();
-        }
-
-        let ts = timestamps;
-        let ts_last = *ts.last().expect("timestamps should not be empty");
-        let mut dense_lefts = Vec::new();
-        for &(raw_start, raw_end) in candidate_ranges {
-            let start = raw_start.max(0);
-            let end = raw_end.min(ts_last);
-            if start > end {
-                continue;
-            }
-            for l in start..=end {
-                let start_idx = lower_bound(ts, l);
-                let end_idx = upper_bound(ts, l + window_size);
-                let count = end_idx - start_idx;
-                if count >= threshold {
-                    dense_lefts.push(l);
-                }
-            }
-        }
-        dense_lefts.sort_unstable();
-        dense_lefts.dedup();
-        collapse_dense_lefts(ts, window_size, &dense_lefts)
+        super::compute_dense_intervals_naive_with_candidates(
+            timestamps,
+            window_size,
+            threshold,
+            candidate_ranges,
+        )
     }
 
     fn candidate_range_sets(max_coord: i64) -> Vec<Vec<(i64, i64)>> {
