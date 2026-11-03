@@ -6,7 +6,11 @@
 Apriori~\cite{agrawal1994fast} and FP-Growth~\cite{han2000mining}
 are foundational methods for mining frequent itemsets.
 ECLAT~\cite{zaki1997new} offers a vertical data format alternative.
-A comprehensive survey of FIM is given in~\cite{fournier2017survey}.
+Comprehensive surveys of FIM are given in~\cite{fournier2017survey,luna2019fim,fournierviger2022survey}.
+Periodic-frequent pattern mining (PFPM)~\cite{tanbeer2009pfpm} and
+multiple minimum support frameworks addressing the rare item
+problem~\cite{liu1999multiple} further extend FIM to locally-significant
+occurrences, yet still rely on global evaluation.
 All of these methods evaluate support over the entire dataset and
 cannot detect itemsets that occur at high frequency only within
 specific time intervals.
@@ -38,4 +42,25 @@ incremental FIM~\cite{lee2001sliding,leung2006dstree},
 where windows limit the temporal scope of support computation.
 However, these methods still report global support within the window
 and do not enumerate all dense sub-intervals.
+Burst detection~\cite{kleinberg2003bursty,yang2021burstsketch} identifies
+frequency spikes of individual items in streams but does not enumerate
+itemset co-occurrence intervals.
 
+\subsection{Positioning}
+
+The essence of dense pattern mining is that an itemset occurs at
+high frequency locally within a specific contiguous interval.
+Our approach directly quantifies local density by evaluating
+occurrence frequency within a sliding window, avoiding reliance
+on occurrence-gap constraints and eliminating the parameter
+sensitivity problem in principle.
+Surveying the existing landscape: (1) FIM methods output only
+patterns; (2) LPFIM/LPPM/RPM output patterns with intervals but
+estimate density indirectly via gap constraints; (3) GLFMiner/SIM
+evaluate direct local frequency but are limited in interval granularity
+or cardinality; (4) incremental FIM supports streaming but does not
+enumerate all dense sub-intervals.
+None of the above realizes \textit{both} direct sliding-window
+frequency evaluation \textit{and} exhaustive dense interval
+enumeration exploiting anti-monotonicity in a streaming setting.
+This paper formalizes and implements this direction.

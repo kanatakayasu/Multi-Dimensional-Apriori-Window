@@ -1,0 +1,209 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% コンパイル:
+%   xelatex main.tex && xelatex main.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt,twocolumn]{AROB}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\newtheorem{definition}{定義}
+\newtheorem{lemma}{補題}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xeCJK}
+\setCJKmainfont[AutoFakeBold=2.5]{Hiragino Mincho ProN}
+\setCJKsansfont{Hiragino Sans}
+\setCJKmonofont{Hiragino Sans}
+
+\title{Streaming Apriori-Window: Mining Dense Patterns\\
+       from Streaming Data for Autonomous Agent Monitoring}
+
+\author{Kanata Takayasu${}^{1\dagger}$, Taihei Takahashi${}^{1}$,
+        Satoshi Suga${}^{2}$, and Satoshi Kurihara${}^{1}$}
+% The dagger symbol indicates the presenter.
+\speaker{Kanata Takayasu}
+
+\affils{${}^{1}$Keio University, Yokohama, Japan\\
+${}^{2}$Kansai University, Osaka, Japan\\
+}
+
+\abstract{%
+自律AIシステムおよびロボットエージェントは、行動パターンを内包したセンサイベントストリームを生成する。
+これらのパターンが\textit{いつ}密集して共起するかを検出するには、出力レイテンシを制御可能な
+ストリーミング対応の区間マイニングフレームワークが必要である。
+本稿では、スキャン頻度 $\Delta$ をパラメータとする Streaming Apriori-Window を提案する。
+提案手法は、固定幅スライディングウィンドウ内でアイテムセット頻度が閾値を満たす
+すべての時間区間を特定する。
+単調スキャン性質から確定出力保証が得られる。
+Scan Stride Skipping と Apriori Interval Pruning の2つの高速化技術により実用的な処理速度を実現する。
+合成データおよび実データを用いた4つの実験で評価する：
+パラメータ感度分析（EX-1）、スケーラビリティ実験（EX-2）、
+両高速化技術が独立に寄与することを確認するアブレーション実験（EX-3）、
+および解釈可能かつドメイン整合的な密集区間を出力する
+CASASスマートホームセンサストリームを用いた実データ評価（EX-4）。\par
+これらの実験から、提案手法が実用的な処理速度でストリームデータからの密集パターンを正確に抽出でき、
+自律エージェント監視への適用可能性を持つことが示された。%
+}
+
+\keywords{%
+Data Streaming Mining, Dense Pattern Mining, Sensor Data Analysis,
+Behavior Analysis, Intelligent Monitoring%
+}
+
+\begin{document}
+
+\maketitle
+
+%-----------------------------------------------------------------------
+
+\input{sec/introduction}
+
+\input{sec/related}
+
+\input{sec/problem}
+
+\input{sec/algorithm}
+
+\input{sec/experiments}
+
+\input{sec/conclusion}
+
+%-----------------------------------------------------------------------
+
+\section*{Acknowledgment}
+This work is supported by the Honda Bridge Project.
+Part of the text in this paper was generated with assistance from Anthropic's large language model Claude~\cite{claude2025}.
+
+%-----------------------------------------------------------------------
+
+\begin{thebibliography}{99}
+
+\bibitem{takayasu2025arxiv}
+K. Takayasu {\it et al.},
+``Apriori-Window: Exact enumeration of dense itemset intervals over sliding windows,''
+{\it arXiv preprint arXiv:2604.24122}, 2025.
+
+\bibitem{agrawal1994fast}
+R. Agrawal and R. Srikant,
+``Fast algorithms for mining association rules,''
+in \textit{Proceedings of the 20th International Conference on Very Large Data Bases (VLDB'94)},
+pp.~487--499, 1994.
+
+\bibitem{zaki1997new}
+M. J. Zaki, S. Parthasarathy, M. Ogihara, and W. Li,
+``New algorithms for fast discovery of association rules,''
+in \textit{Proceedings of the 3rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD'97)},
+pp.~283--296, 1997.
+
+\bibitem{han2000mining}
+J. Han, J. Pei, and Y. Yin,
+``Mining frequent patterns without candidate generation,''
+\textit{ACM SIGMOD Record}, vol.~29, no.~2, pp.~1--12, 2000.
+DOI: \url{https://doi.org/10.1145/335191.335372}.
+
+\bibitem{fournier2017survey}
+P. Fournier-Viger, J. C.-W. Lin, B. Vo, T. T. Chi, J. Zhang, and H. B. Le,
+``A survey of itemset mining,''
+{\it WIREs Data Mining Knowl. Discov.}, vol.~7, no.~4, e1207, 2017.
+DOI: \url{https://doi.org/10.1002/widm.1207}.
+
+\bibitem{yin2014lpfim}
+K.-C. Yin, Y.-L. Hsieh, D.-L. Yang, and M.-C. Hung,
+``Association rule mining considering local frequent patterns with temporal intervals,''
+{\it Applied Mathematics \& Information Sciences}, vol.~8, no.~4,
+pp.~1879--1890, 2014.
+DOI: \url{https://doi.org/10.12785/amis/080446}.
+
+\bibitem{saleh2011lppm}
+B. Saleh and F. Masseglia,
+``Discovering frequent behaviors: Time is an essential element of the context,''
+{\it Knowledge and Information Systems}, vol.~28, no.~2, pp.~311--331, 2011.
+DOI: \url{https://doi.org/10.1007/s10115-010-0361-5}.
+
+\bibitem{kiran2017rpm}
+R. U. Kiran, J. Venkatesh, M. Toyoda, M. Kitsuregawa, and P. K. Reddy,
+``Discovering partial periodic-frequent patterns in a transactional database,''
+{\it Journal of Systems and Software}, vol.~125, pp.~170--182, 2017.
+DOI: \url{https://doi.org/10.1016/j.jss.2016.11.035}.
+
+\bibitem{fournierviger2021glf}
+P. Fournier-Viger, P. Yang, R. U. Kiran, S. Ventura, and J. M. Luna,
+``Mining local periodic patterns in a discrete sequence,''
+{\it Information Sciences}, vol.~544, pp.~519--548, 2021.
+DOI: \url{https://doi.org/10.1016/j.ins.2020.09.044}.
+
+\bibitem{kiran2015sim}
+R. U. Kiran, H. Shang, M. Toyoda, and M. Kitsuregawa,
+``Discovering recurring patterns in time series,''
+in \textit{Proceedings of the 18th International Conference on Extending Database Technology (EDBT 2015)},
+pp.~97--108, 2015.
+
+\bibitem{lee2001sliding}
+C.-H. Lee, C.-R. Lin, and M.-S. Chen,
+``Sliding-window filtering: An efficient algorithm for incremental mining,''
+in \textit{Proceedings of the 10th ACM Conference on Information and Knowledge Management (CIKM 2001)},
+pp.~263--270, 2001. DOI: \url{https://doi.org/10.1145/502585.502630}.
+
+\bibitem{leung2006dstree}
+C. K.-S. Leung and Q. I. Khan,
+``DSTree: A tree structure for the mining of frequent sets from data streams,''
+in \textit{Proceedings of the 6th IEEE International Conference on Data Mining (ICDM 2006)},
+pp.~928--932, 2006. DOI: \url{https://doi.org/10.1109/ICDM.2006.62}.
+
+\bibitem{luna2019fim}
+J. M. Luna, P. Fournier-Viger, and S. Ventura,
+``Frequent itemset mining: A 25 years review,''
+{\it WIREs Data Mining and Knowledge Discovery}, vol.~9, no.~6, e1329, 2019.
+DOI: \url{https://doi.org/10.1002/widm.1329}.
+
+\bibitem{fournierviger2022survey}
+P. Fournier-Viger, W. Gan, Y. Wu, M. Nouioua, W. Song, T. Truong, and H. D. Van,
+``Pattern mining: Current challenges and opportunities,''
+in \textit{Database Systems for Advanced Applications: DASFAA 2022 International Workshops},
+Lecture Notes in Computer Science, vol.~13248, pp.~34--49, Springer, 2022.
+DOI: \url{https://doi.org/10.1007/978-3-031-11217-1_3}.
+
+\bibitem{liu1999multiple}
+B. Liu, W. Hsu, and Y. Ma,
+``Mining association rules with multiple minimum supports,''
+in \textit{Proceedings of the 5th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD'99)},
+pp.~337--341, 1999. DOI: \url{https://doi.org/10.1145/312129.312274}.
+
+\bibitem{tanbeer2009pfpm}
+S. K. Tanbeer, C. F. Ahmed, B.-S. Jeong, and Y.-K. Lee,
+``Discovering periodic-frequent patterns in transactional databases,''
+in \textit{Advances in Knowledge Discovery and Data Mining: 13th Pacific-Asia Conference (PAKDD 2009)},
+Lecture Notes in Computer Science, vol.~5476, pp.~242--253, Springer, 2009.
+DOI: \url{https://doi.org/10.1007/978-3-642-01307-2_24}.
+
+\bibitem{kleinberg2003bursty}
+J. Kleinberg,
+``Bursty and hierarchical structure in streams,''
+{\it Data Mining Knowl. Discov.}, vol.~7, no.~4, pp.~373--397, 2003.
+DOI: \url{https://doi.org/10.1023/A:1024940629314}.
+
+\bibitem{yang2021burstsketch}
+Z. Zhong, S. Yan, Z. Li, D. Tan, T. Yang, and B. Cui,
+``BurstSketch: Finding bursts in data streams,''
+in \textit{Proceedings of the 2021 International Conference on Management of Data (SIGMOD'21)},
+pp.~2375--2383, 2021. DOI: \url{https://doi.org/10.1145/3448016.3452775}.
+
+\bibitem{casas2013}
+D. J. Cook, A. S. Crandall, B. L. Thomas, and N. C. Krishnan,
+``CASAS: A smart home in a box,''
+{\it Computer}, vol.~46, no.~7, pp.~62--69, 2013.
+DOI: \url{https://doi.org/10.1109/MC.2012.328}.
+
+\bibitem{claude2025}
+Anthropic,
+``Claude,'' Anthropic, \url{https://www.anthropic.com/claude} (accessed 2026-10-28).
+
+\end{thebibliography}
+
+\input{sec/appendix}
+
+\end{document}

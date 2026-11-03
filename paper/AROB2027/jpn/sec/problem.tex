@@ -1,0 +1,47 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{問題定式化}
+
+\subsection{ストリーミング型イベントストリーム}
+
+$\mathcal{I}$ をアイテムの有限集合とする。
+\textbf{イベントストリーム}は、$I_t \subseteq \mathcal{I}$ を満たすイベントの列
+$I_0, I_1, I_2, \ldots$ であり、各イベントには離散タイムスタンプ $t \in \mathbb{Z}_{\geq 0}$ が付与される。
+センサ観測やエージェントログのように、イベントは時間の経過とともに逐次生成され、
+終端が事前に定まらない点がストリームの本質的な特徴である。
+
+\subsection{密集区間}
+
+ウィンドウ幅 $W \in \mathbb{Z}_{>0}$ および閾値 $\theta \in \mathbb{Z}_{>0}$ を与える。
+
+\begin{definition}[区間サポート]
+パターン $X \subseteq \mathcal{I}$ の発生列を
+$\mathit{occ}(X) = \{t : X \subseteq I_t\}$ とする。
+ウィンドウ左端 $l$ における\textbf{区間サポート}を
+\[
+  \mathrm{sup}(X, l, W) = |\{t \in \mathit{occ}(X) : l \leq t \leq l + W\}|
+\]
+と定義する。窓 $[l,\, l{+}W]$ は $W{+}1$ 個の離散時刻を含む。
+\end{definition}
+
+\begin{definition}[密集開始点集合と密集区間]
+サポート閾値 $\theta$ に対し、
+\[
+  \mathcal{T}_\theta(X) = \{l \in \mathbb{Z}_{\geq 0} : \mathrm{sup}(X, l, W) \geq \theta\}
+\]
+を $X$ の\textbf{密集開始点集合}とする。
+$[a,\, b] \subseteq \mathcal{T}_\theta(X)$ の最大連続成分に対し、
+$[a,\, b{+}W]$ を $X$ の\textbf{密集区間}と呼ぶ。
+\end{definition}
+
+\subsection{ストリーミング密集区間マイニング問題}
+
+センサや自律エージェントが生成するイベントストリームでは、
+イベントが継続的に到着し続ける。
+システムは $\Delta$ 秒ごとに定期的にスキャンをトリガーし、
+そのスキャン時点 $s$ までに受信済みのイベント列に対して密集区間を計算する。
+スキャン時刻 $s = 0, \Delta, 2\Delta, \ldots$ において、
+右端が $l_e + W \leq s$ を満たすすべての密集区間 $(X, [l_s, l_e])$ を重複なく列挙することが目標である。
+
+パラメータ $\Delta$ はレイテンシと計算コストのトレードオフを制御する。
+$\Delta$ を小さく設定するほどスキャン頻度が上がり、
+低いレイテンシでリアルタイムに密集区間を検出できる。

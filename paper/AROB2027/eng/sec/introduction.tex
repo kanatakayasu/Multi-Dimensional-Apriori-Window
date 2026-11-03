@@ -13,16 +13,19 @@ or emerging anomalies that demand timely response.
 The approach also has broad applicability across domains such as retail and epidemiology.
 
 We propose \textit{Streaming Apriori-Window}, a dense interval mining
-algorithm for event streams parameterized by a scan frequency $n$.
+algorithm for event streams parameterized by a scan frequency $\Delta$.
 The algorithm identifies all time intervals in which itemset occurrence
 frequency within a fixed-width sliding window meets a threshold.
 Two speedup techniques --- stride-based skipping and Apriori-style
 candidate pruning --- are incorporated to achieve practical processing speed.
+\textcolor{red}{We previously introduced Apriori-Window in our preliminary study~\cite{takayasu2025arxiv}.
+In this paper, we extend the method to a streaming framework with formal output guarantees,
+proven speedup techniques, and comprehensive experimental evaluation.}
 
 The main contributions of this paper are as follows:
 \begin{itemize}
   \item We formalize the streaming dense interval mining problem with
-        an explicit scan frequency parameter $n$ that controls the tradeoff
+        an explicit scan frequency parameter $\Delta$ that controls the tradeoff
         between output latency and processing cost.
   \item We prove a confirmed output guarantee: intervals ending before
         the current scan position are unaffected by future events.

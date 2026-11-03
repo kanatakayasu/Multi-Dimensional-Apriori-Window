@@ -128,10 +128,14 @@ fn main() {
         let max_length: usize = args[6].parse().expect("max_length must be integer");
         let seed: u64 = args.get(7).and_then(|s| s.parse().ok()).unwrap_or(42);
 
-        // Each item has its own dense epoch; epochs overlap by 2 items to allow k-subsets
-        let epoch_len = t_len / n_items * 3; // ~3x step so adjacent items share ~1/3 overlap
+        // Adjacent items share overlap=100 timesteps so size-2 pairs are genuinely dense
+        // (expected co-occurrences = 0.8^2 * 100 = 64 >= theta), while size-3 triplets
+        // (i, i+1, i+2) are prunable because items i and i+2 are ~2*step >> W apart.
+        let step = t_len / n_items;
+        let overlap = 100_usize;
+        let epoch_len = step + overlap;
         let transactions =
-            generate_synthetic(t_len, n_items, epoch_len, 0.8, 0.05, 2, seed);
+            generate_synthetic(t_len, n_items, epoch_len, 0.8, 0.05, overlap, seed);
 
         println!("Dataset : synthetic");
         println!(

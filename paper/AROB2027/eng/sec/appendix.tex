@@ -1,0 +1,91 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{Synthetic Data Generation}
+
+Synthetic streams are generated with epoch-structured item occurrence patterns.
+
+\textbf{Epoch structure.}
+Each of the $|\mathcal{I}|$ items $i = 0, 1, \ldots, |\mathcal{I}|{-}1$
+is assigned a dense epoch within the stream.
+The epoch width is
+\[
+  L_{\mathrm{ep}} = \left\lfloor \frac{T}{|\mathcal{I}|} \right\rfloor \times 3,
+\]
+with step width $\mathrm{step} = L_{\mathrm{ep}} - 2$ so that epochs of
+adjacent items overlap by two items.
+Item $i$ starts its epoch at $s_i = (i \times \mathrm{step}) \bmod T$,
+giving the epoch interval $[s_i,\; s_i + L_{\mathrm{ep}})$
+(with wraparound at boundary).
+
+\textbf{Firing probability.}
+At each timestep $t$, item $i$ appears in the stream with probability
+\[
+  p_i(t) =
+  \begin{cases}
+    0.8  & t \text{ is within item } i\text{'s epoch} \\
+    0.05 & \text{otherwise}
+  \end{cases}
+\]
+Each item is sampled independently.
+
+%-----------------------------------------------------------------------
+\section{Validity of Scan Stride Skipping}
+
+\begin{lemma}[Validity of Dense Phase]\label{lem:stride_dense}
+In window $[l, l+W]$ let $c = \mathrm{sup}(X, l, W) \geq \theta$,
+and set $l_{\mathrm{dense}} = \mathit{occ}(X)[i_{\mathrm{start}} + c - \theta]$.
+Then for every $l' \in [l,\, l_{\mathrm{dense}}]$,
+$\mathrm{sup}(X, l', W) \geq \theta$.
+\end{lemma}
+
+\begin{proof}
+Let the occurrences in $[l, l+W]$ be
+$\mathit{occ}(X)[i_{\mathrm{start}}], \ldots, \mathit{occ}(X)[i_{\mathrm{start}}+c-1]$.
+For $l' \leq l_{\mathrm{dense}} = \mathit{occ}(X)[i_{\mathrm{start}}+c-\theta]$,
+the $\theta$ occurrences
+$\mathit{occ}(X)[i_{\mathrm{start}}+c-\theta], \ldots, \mathit{occ}(X)[i_{\mathrm{start}}+c-1]$
+all lie in $[l', l'+W]$:
+lower bound $\mathit{occ}(X)[i_{\mathrm{start}}+c-\theta] \geq l'$ (by assumption);
+upper bound $\mathit{occ}(X)[i_{\mathrm{start}}+c-1] \leq l+W \leq l'+W$ (since $l \leq l'$).
+Hence $\mathrm{sup}(X, l', W) \geq \theta$.
+\end{proof}
+
+\begin{lemma}[Validity of Non-Dense Phase]\label{lem:stride_sparse}
+In window $[l, l+W]$ let $c = \mathrm{sup}(X, l, W) < \theta$,
+and set $l_{\mathrm{new}} = \mathit{occ}(X)[i_{\mathrm{end}} + (\theta-c) - 1] - W$.
+Then for every $l' \in (l,\, l_{\mathrm{new}})$,
+$\mathrm{sup}(X, l', W) < \theta$.
+\end{lemma}
+
+\begin{proof}
+Partition the occurrences in $[l', l'+W]$ into two parts.
+(i)~In $[l', l+W] \subseteq [l, l+W]$: at most $c$ occurrences.
+(ii)~In $(l+W, l'+W]$: since $l' < l_{\mathrm{new}}$ we have
+$l'+W < \mathit{occ}(X)[i_{\mathrm{end}}+(\theta-c)-1]$,
+so this part contains occurrences
+$\mathit{occ}(X)[i_{\mathrm{end}}], \ldots, \mathit{occ}(X)[i_{\mathrm{end}}+(\theta-c)-2]$,
+at most $\theta-c-1$.
+Total $\leq c + (\theta-c-1) = \theta - 1 < \theta$.
+\end{proof}
+
+%-----------------------------------------------------------------------
+\section{Validity of Apriori Interval Pruning}
+
+\begin{lemma}[Candidate Range Restriction by Anti-Monotonicity]\label{lem:apriori}
+For an itemset $X$ of size $k$, if some $(k{-}1)$-subset $Y \subsetneq X$
+satisfies $\mathrm{sup}(Y, l, W) < \theta$ in window $[l, l+W]$,
+then $\mathrm{sup}(X, l, W) < \theta$.
+\end{lemma}
+
+\begin{proof}
+If $X \subseteq I_t$ then $Y \subset X \subseteq I_t$, so
+$\{t \in \mathit{occ}(X) : l \leq t \leq l+W\} \subseteq
+ \{t \in \mathit{occ}(Y) : l \leq t \leq l+W\}$.
+Hence $\mathrm{sup}(X, l, W) \leq \mathrm{sup}(Y, l, W) < \theta$.
+\end{proof}
+
+By Lemma~\ref{lem:apriori}, any $l$ not in the intersection
+$R_X = \bigcap_{Y \subsetneq X,\, |Y|=k-1} \mathcal{T}_\theta(Y)$
+cannot yield a dense window for $X$, so scanning $R_X$ alone suffices.
+

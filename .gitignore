@@ -27,6 +27,13 @@ paper/**/main.pdf
 # Large raw datasets (not tracked in git)
 dataset/casas/labeled_data/
 dataset/casas/labeled_data.zip
+dataset/chicago_crime/
+dataset/nyc_311/
+dataset/nyc_crime/
+dataset/usgs_earthquake/
+
+# Stray log files
+*.log
 
 # Personal files (not part of the project)
 IMG_6727.heic

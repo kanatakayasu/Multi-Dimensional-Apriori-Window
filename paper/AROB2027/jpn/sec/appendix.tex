@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{合成データの生成方法}
+
+合成ストリームはエポック構造を持つアイテム出現パターンで生成する。
+
+\textbf{エポック構造.}
+$|\mathcal{I}|$ 個のアイテム $i = 0, 1, \ldots, |\mathcal{I}|{-}1$ のそれぞれに、ストリーム内の密集エポックを割り当てる。
+エポック幅を
+\[
+  L_{\mathrm{ep}} = \left\lfloor \frac{T}{|\mathcal{I}|} \right\rfloor \times 3
+\]
+とし、隣接アイテムのエポックが2アイテム分重複するようにステップ幅を
+$\mathrm{step} = L_{\mathrm{ep}} - 2$ と定める。
+アイテム $i$ のエポック開始位置は $s_i = (i \times \mathrm{step}) \bmod T$ であり、
+エポック区間は $[s_i,\; s_i + L_{\mathrm{ep}})$ となる（循環境界）。
+
+\textbf{発火確率.}
+各タイムステップ $t$ において、アイテム $i$ は以下の確率でイベントストリームに出現する：
+\[
+  p_i(t) =
+  \begin{cases}
+    0.8 & t \text{ がアイテム } i \text{ のエポック内} \\
+    0.05 & \text{それ以外}
+  \end{cases}
+\]
+各アイテムは独立にサンプリングされる。
+
+%-----------------------------------------------------------------------
+\section{Scan Stride Skipping の正当性}
+
+\begin{lemma}[密集フェーズの正当性]\label{lem:stride_dense}
+ウィンドウ $[l, l+W]$ において $c = \mathrm{sup}(X, l, W) \geq \theta$ とし、
+$l_{\mathrm{dense}} = \mathit{occ}(X)[i_{\mathrm{start}} + c - \theta]$ とおく。
+このとき任意の $l' \in [l,\, l_{\mathrm{dense}}]$ に対して
+$\mathrm{sup}(X, l', W) \geq \theta$ が成り立つ。
+\end{lemma}
+
+\begin{proof}
+$[l, l+W]$ 内の出現を $\mathit{occ}(X)[i_{\mathrm{start}}], \ldots, \mathit{occ}(X)[i_{\mathrm{start}}+c-1]$ とする。
+$l' \leq l_{\mathrm{dense}} = \mathit{occ}(X)[i_{\mathrm{start}}+c-\theta]$ のとき、
+出現 $\mathit{occ}(X)[i_{\mathrm{start}}+c-\theta], \ldots, \mathit{occ}(X)[i_{\mathrm{start}}+c-1]$（計 $\theta$ 個）は
+$[l', l'+W]$ に全て含まれる。
+下界：$\mathit{occ}(X)[i_{\mathrm{start}}+c-\theta] \geq l'$（仮定より）。
+上界：$\mathit{occ}(X)[i_{\mathrm{start}}+c-1] \leq l+W \leq l'+W$（$l \leq l'$ より）。
+よって $\mathrm{sup}(X, l', W) \geq \theta$。
+\end{proof}
+
+\begin{lemma}[非密集フェーズの正当性]\label{lem:stride_sparse}
+ウィンドウ $[l, l+W]$ において $c = \mathrm{sup}(X, l, W) < \theta$ とし、
+$l_{\mathrm{new}} = \mathit{occ}(X)[i_{\mathrm{end}} + (\theta-c) - 1] - W$ とおく。
+このとき任意の $l' \in (l,\, l_{\mathrm{new}})$ に対して
+$\mathrm{sup}(X, l', W) < \theta$ が成り立つ。
+\end{lemma}
+
+\begin{proof}
+$[l', l'+W]$ 内の出現を2つに分ける。
+(i)~$[l', l+W]$ 内：$[l', l+W] \subseteq [l, l+W]$ より高々 $c$ 個。
+(ii)~$(l+W, l'+W]$ 内：$l' < l_{\mathrm{new}}$ より $l'+W < \mathit{occ}(X)[i_{\mathrm{end}}+(\theta-c)-1]$ であるから、
+含まれる出現は $\mathit{occ}(X)[i_{\mathrm{end}}], \ldots, \mathit{occ}(X)[i_{\mathrm{end}}+(\theta-c)-2]$ の高々 $(\theta-c-1)$ 個。
+合計 $\leq c + (\theta-c-1) = \theta - 1 < \theta$。
+よって $\mathrm{sup}(X, l', W) < \theta$。
+\end{proof}
+
+%-----------------------------------------------------------------------
+\section{Apriori Interval Pruning の正当性}
+
+\begin{lemma}[反単調性による候補区間制限]\label{lem:apriori}
+サイズ $k$ のアイテムセット $X$ に対し、ある $(k{-}1)$ 部分集合 $Y \subsetneq X$ が
+ウィンドウ $[l, l+W]$ において $\mathrm{sup}(Y, l, W) < \theta$ を満たすならば、
+$\mathrm{sup}(X, l, W) < \theta$ が成り立つ。
+\end{lemma}
+
+\begin{proof}
+$X \subseteq I_t$ ならば $Y \subset X \subseteq I_t$ であるから、
+$\{t \in \mathit{occ}(X) : l \leq t \leq l+W\} \subseteq \{t \in \mathit{occ}(Y) : l \leq t \leq l+W\}$
+が成り立つ。よって $\mathrm{sup}(X, l, W) \leq \mathrm{sup}(Y, l, W) < \theta$。
+\end{proof}
+
+補題~\ref{lem:apriori} より、$X$ の全 $(k{-}1)$ 部分集合の密集開始点集合の共通部分
+$R_X = \bigcap_{Y \subsetneq X,\, |Y|=k-1} \mathcal{T}_\theta(Y)$
+に含まれない $l$ では $X$ が密集できないため、$R_X$ のみをスキャンすれば十分である。
+
